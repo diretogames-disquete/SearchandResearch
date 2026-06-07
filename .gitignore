@@ -1,7 +1,5 @@
-# Scraper output
+# Scraper output (raw HTML, data.json, screenshots, zips)
 output/
-*.html
-!fields.example.yaml
 
 # Python
 __pycache__/

@@ -9,9 +9,13 @@ pages work), it produces three outputs in an isolated per-page directory:
                    custom fields extracted via CSS selectors from a config file
   3. screenshot.png (optional, with --screenshot)
 
+It can also crawl: follow same-domain links up to a given depth, and optionally
+respect each site's robots.txt.
+
 Usage:
   python scraper.py https://example.com
   python scraper.py https://example.com --config fields.yaml --screenshot
+  python scraper.py https://example.com --crawl-depth 1 --respect-robots
   python scraper.py --urls-file urls.txt --output-dir out
 
 See README.md for the config file format.
@@ -24,7 +28,10 @@ import datetime as _dt
 import json
 import re
 import sys
+import time
+from collections import deque
 from pathlib import Path
+from urllib import robotparser
 from urllib.parse import urljoin, urlparse
 
 try:
@@ -157,6 +164,30 @@ def extract_links(page, base_url: str) -> list[dict]:
     return links
 
 
+class RobotsCache:
+    """Per-domain robots.txt lookups, cached for the duration of a run."""
+
+    def __init__(self, user_agent: str | None):
+        self.ua = user_agent or "*"
+        self._cache: dict[str, robotparser.RobotFileParser | None] = {}
+
+    def allowed(self, url: str) -> bool:
+        parsed = urlparse(url)
+        base = f"{parsed.scheme}://{parsed.netloc}"
+        if base not in self._cache:
+            rp = robotparser.RobotFileParser()
+            rp.set_url(urljoin(base, "/robots.txt"))
+            try:
+                rp.read()
+            except Exception:
+                rp = None  # no robots.txt reachable -> allow
+            self._cache[base] = rp
+        rp = self._cache[base]
+        if rp is None:
+            return True
+        return rp.can_fetch(self.ua, url)
+
+
 def scrape_url(page, url: str, fields: dict, out_dir: Path, screenshot: bool) -> dict:
     print(f"-> {url}")
     response = page.goto(url, wait_until="networkidle")
@@ -198,6 +229,105 @@ def scrape_url(page, url: str, fields: dict, out_dir: Path, screenshot: bool) ->
     return data
 
 
+def scrape(
+    urls: list[str],
+    output_dir: str = "output",
+    fields: dict | None = None,
+    screenshot: bool = False,
+    crawl_depth: int = 0,
+    same_domain_only: bool = True,
+    max_pages: int = 50,
+    respect_robots: bool = False,
+    timeout: int = 30000,
+    user_agent: str | None = None,
+    headful: bool = False,
+    delay: float = 0.0,
+) -> dict:
+    """Scrape (and optionally crawl) the given URLs. Returns a run summary.
+
+    This is the reusable entry point the dashboard imports.
+    """
+    fields = fields or {}
+    out_dir = Path(output_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    robots = RobotsCache(user_agent) if respect_robots else None
+    start_domains = {urlparse(u).netloc for u in urls}
+
+    results: list[dict] = []
+    failures: list[dict] = []
+
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=not headful)
+        context = browser.new_context(user_agent=user_agent, ignore_https_errors=True)
+        context.set_default_timeout(timeout)
+        page = context.new_page()
+
+        queue: deque[tuple[str, int]] = deque((u, 0) for u in urls)
+        visited: set[str] = set()
+
+        while queue and len(results) < max_pages:
+            url, depth = queue.popleft()
+            if url in visited:
+                continue
+            visited.add(url)
+
+            if robots and not robots.allowed(url):
+                print(f"   ! blocked by robots.txt: {url}", file=sys.stderr)
+                failures.append({"url": url, "error": "blocked by robots.txt"})
+                continue
+
+            try:
+                data = scrape_url(page, url, fields, out_dir, screenshot)
+                results.append(data)
+            except PWTimeoutError:
+                print(f"   ! timeout loading {url}", file=sys.stderr)
+                failures.append({"url": url, "error": "timeout"})
+                continue
+            except Exception as exc:
+                print(f"   ! failed {url}: {exc}", file=sys.stderr)
+                failures.append({"url": url, "error": str(exc)})
+                continue
+
+            # Enqueue further links if we still have crawl depth to spend.
+            if depth < crawl_depth:
+                for link in data["links"]:
+                    lu = link["url"]
+                    if lu in visited:
+                        continue
+                    parsed = urlparse(lu)
+                    if parsed.scheme not in ("http", "https"):
+                        continue
+                    if same_domain_only and parsed.netloc not in start_domains:
+                        continue
+                    queue.append((lu, depth + 1))
+
+            if delay:
+                time.sleep(delay)
+
+        browser.close()
+
+    summary = {
+        "scraped": len(results),
+        "failed": len(failures),
+        "output_dir": str(out_dir),
+        "pages": [
+            {
+                "url": r["final_url"],
+                "title": r["title"],
+                "links": len(r["links"]),
+                "dir": slugify(r["final_url"]),
+            }
+            for r in results
+        ],
+        "failures": failures,
+    }
+    (out_dir / "index.json").write_text(
+        json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    return summary
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Generic configurable web scraper (Playwright).",
@@ -211,6 +341,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--headful", action="store_true", help="Run with a visible browser window.")
     parser.add_argument("--timeout", type=int, default=30000, help="Per-page timeout in ms.")
     parser.add_argument("--user-agent", help="Override the browser user agent.")
+    parser.add_argument("--crawl-depth", type=int, default=0,
+                        help="Follow links up to this depth (0 = only the given URLs).")
+    parser.add_argument("--max-pages", type=int, default=50,
+                        help="Stop after scraping this many pages.")
+    parser.add_argument("--all-domains", action="store_true",
+                        help="When crawling, follow links off the starting domain(s) too.")
+    parser.add_argument("--respect-robots", action="store_true",
+                        help="Skip URLs disallowed by the site's robots.txt.")
+    parser.add_argument("--delay", type=float, default=0.0,
+                        help="Seconds to wait between page loads (be polite).")
     return parser.parse_args(argv)
 
 
@@ -221,46 +361,25 @@ def main(argv: list[str] | None = None) -> int:
         sys.exit("No URLs provided. Pass a URL or --urls-file. Use -h for help.")
 
     fields = normalize_fields(load_config(args.config))
-    out_dir = Path(args.output_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    results, failures = [], []
-    with sync_playwright() as pw:
-        browser = pw.chromium.launch(headless=not args.headful)
-        context = browser.new_context(
-            user_agent=args.user_agent,
-            ignore_https_errors=True,
-        )
-        context.set_default_timeout(args.timeout)
-        page = context.new_page()
-
-        for url in urls:
-            try:
-                results.append(scrape_url(page, url, fields, out_dir, args.screenshot))
-            except PWTimeoutError:
-                print(f"   ! timeout loading {url}", file=sys.stderr)
-                failures.append({"url": url, "error": "timeout"})
-            except Exception as exc:
-                print(f"   ! failed {url}: {exc}", file=sys.stderr)
-                failures.append({"url": url, "error": str(exc)})
-
-        browser.close()
-
-    # A run-level summary index for convenience.
-    summary = {
-        "scraped": len(results),
-        "failed": len(failures),
-        "pages": [
-            {"url": r["final_url"], "title": r["title"], "links": len(r["links"])}
-            for r in results
-        ],
-        "failures": failures,
-    }
-    (out_dir / "index.json").write_text(
-        json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8"
+    summary = scrape(
+        urls,
+        output_dir=args.output_dir,
+        fields=fields,
+        screenshot=args.screenshot,
+        crawl_depth=args.crawl_depth,
+        same_domain_only=not args.all_domains,
+        max_pages=args.max_pages,
+        respect_robots=args.respect_robots,
+        timeout=args.timeout,
+        user_agent=args.user_agent,
+        headful=args.headful,
+        delay=args.delay,
     )
-    print(f"\nDone: {len(results)} scraped, {len(failures)} failed. Index: {out_dir}/index.json")
-    return 0 if not failures else 1
+    print(
+        f"\nDone: {summary['scraped']} scraped, {summary['failed']} failed. "
+        f"Index: {summary['output_dir']}/index.json"
+    )
+    return 0 if not summary["failures"] else 1
 
 
 if __name__ == "__main__":

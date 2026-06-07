@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SearchandResearch — Scraper Dashboard</title>
+  <style>
+    :root {
+      --bg: #0f1221; --panel: #181c2f; --panel2: #1f2440;
+      --text: #e7e9f2; --muted: #9aa0bd; --accent: #6c8cff; --accent2: #46d3a3;
+      --border: #2a3050; --danger: #ff6b6b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: radial-gradient(1200px 600px at 70% -10%, #1b2142 0%, var(--bg) 60%);
+      color: var(--text); min-height: 100vh;
+    }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 32px 20px 64px; }
+    header h1 { margin: 0 0 4px; font-size: 28px; }
+    header p { margin: 0 0 28px; color: var(--muted); }
+    .card {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 14px; padding: 22px; margin-bottom: 22px;
+    }
+    .card h2 { margin: 0 0 14px; font-size: 18px; }
+    label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; }
+    input[type=url], input[type=text], input[type=number] {
+      width: 100%; padding: 13px 14px; border-radius: 10px; font-size: 15px;
+      background: var(--panel2); border: 1px solid var(--border); color: var(--text);
+    }
+    input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    .opts { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; margin: 16px 0 4px; }
+    .opt { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text); }
+    .opt input[type=number] { width: 72px; padding: 8px; }
+    button {
+      cursor: pointer; border: none; border-radius: 10px; font-size: 15px; font-weight: 600;
+      padding: 13px 22px; color: #0b0e1a; background: var(--accent);
+      transition: transform .05s ease, filter .15s ease;
+    }
+    button:hover { filter: brightness(1.08); }
+    button:active { transform: translateY(1px); }
+    button.secondary { background: var(--accent2); }
+    button.ghost { background: transparent; color: var(--accent); border: 1px solid var(--border); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .hint { color: var(--muted); font-size: 13px; margin-top: 10px; }
+    /* clickable instructions */
+    details {
+      background: var(--panel2); border: 1px solid var(--border);
+      border-radius: 10px; margin-bottom: 10px; overflow: hidden;
+    }
+    details summary {
+      cursor: pointer; padding: 14px 16px; font-weight: 600; list-style: none;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    details summary::-webkit-details-marker { display: none; }
+    details summary::after { content: "＋"; color: var(--accent); font-size: 18px; }
+    details[open] summary::after { content: "－"; }
+    details .body { padding: 0 16px 16px; color: var(--muted); font-size: 14px; line-height: 1.6; }
+    code, pre {
+      background: #0c0f1d; border: 1px solid var(--border); border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px;
+    }
+    code { padding: 1px 6px; color: var(--accent2); }
+    pre { padding: 12px 14px; overflow-x: auto; color: var(--text); }
+    /* results */
+    #status { font-size: 14px; margin: 14px 0; min-height: 20px; }
+    #status.err { color: var(--danger); }
+    #status.ok { color: var(--accent2); }
+    .result { border-top: 1px solid var(--border); padding: 12px 0; }
+    .result:first-child { border-top: none; }
+    .result .title { font-weight: 600; }
+    .result .meta { color: var(--muted); font-size: 13px; word-break: break-all; }
+    .result a { color: var(--accent); text-decoration: none; font-size: 13px; }
+    .spinner {
+      width: 16px; height: 16px; border: 2px solid var(--border);
+      border-top-color: var(--accent); border-radius: 50%;
+      display: inline-block; vertical-align: middle; animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>🔎 SearchandResearch</h1>
+      <p>Paste a URL, scrape it with a real headless browser, then download the results.</p>
+    </header>
+
+    <!-- URL box -->
+    <section class="card">
+      <h2>Scrape a URL</h2>
+      <label for="url">Website URL</label>
+      <div class="row">
+        <input id="url" type="url" placeholder="https://example.com" autofocus />
+      </div>
+      <div class="opts">
+        <label class="opt"><input id="screenshot" type="checkbox" /> Save screenshot</label>
+        <label class="opt"><input id="robots" type="checkbox" checked /> Respect robots.txt</label>
+        <label class="opt">Crawl depth <input id="depth" type="number" min="0" max="3" value="0" /></label>
+        <label class="opt">Max pages <input id="maxpages" type="number" min="1" max="200" value="25" /></label>
+      </div>
+      <div class="row" style="margin-top:16px;">
+        <button id="scrapeBtn">Scrape</button>
+        <button id="downloadAll" class="secondary" disabled>⬇ Download all (ZIP)</button>
+      </div>
+      <div id="status"></div>
+      <div id="results"></div>
+      <p class="hint">Crawl depth 0 = just this page. Depth 1 follows same-domain links one hop, etc.
+        The ZIP preserves every page's folder and subfolders (page.html, data.json, screenshot.png).</p>
+    </section>
+
+    <!-- clickable instructions -->
+    <section class="card">
+      <h2>How to set this up &amp; use it <span class="hint">(click a step to expand)</span></h2>
+
+      <details open>
+        <summary>1 · Install dependencies</summary>
+        <div class="body">
+          Install Python packages, then download the browser Playwright drives:
+          <pre>pip install -r requirements.txt
+playwright install chromium</pre>
+        </div>
+      </details>
+
+      <details>
+        <summary>2 · Launch the dashboard</summary>
+        <div class="body">
+          Start the web app and open it in your browser:
+          <pre>python app.py
+# visit http://127.0.0.1:5000</pre>
+        </div>
+      </details>
+
+      <details>
+        <summary>3 · Scrape a page</summary>
+        <div class="body">
+          Paste a URL in the box above and press <strong>Scrape</strong>. Tick
+          <em>Save screenshot</em> for a full-page PNG, set a <em>Crawl depth</em> to follow
+          same-domain links, and leave <em>Respect robots.txt</em> on to skip disallowed pages.
+          Each scraped page produces <code>page.html</code>, <code>data.json</code>
+          (title, links, visible text, custom fields), and optionally <code>screenshot.png</code>.
+        </div>
+      </details>
+
+      <details>
+        <summary>4 · Download the results</summary>
+        <div class="body">
+          Click <strong>Download all (ZIP)</strong> to get every result folder and subfolder
+          in one archive, or use the per-page <em>Download</em> link in the results list to grab
+          just one page's folder.
+        </div>
+      </details>
+
+      <details>
+        <summary>5 · Use it from the command line</summary>
+        <div class="body">
+          The same engine works as a CLI without the dashboard:
+          <pre>python scraper.py https://example.com --screenshot
+python scraper.py https://example.com --crawl-depth 1 --respect-robots
+python scraper.py --urls-file urls.txt --output-dir output</pre>
+        </div>
+      </details>
+
+      <details>
+        <summary>6 · Extract custom fields (CSS selectors)</summary>
+        <div class="body">
+          Create a YAML/JSON config mapping output keys to CSS selectors and pass it with
+          <code>--config</code>. Values land under <code>"fields"</code> in each
+          <code>data.json</code>:
+          <pre>fields:
+  page_heading: "h1"
+  story_titles:
+    selector: ".titleline > a"
+    multiple: true
+    attr: text</pre>
+          See <code>fields.example.yaml</code> in the repo.
+        </div>
+      </details>
+    </section>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const statusEl = $("status");
+    const resultsEl = $("results");
+    const downloadAll = $("downloadAll");
+
+    function setStatus(msg, cls) {
+      statusEl.className = cls || "";
+      statusEl.innerHTML = msg;
+    }
+
+    $("scrapeBtn").addEventListener("click", async () => {
+      const url = $("url").value.trim();
+      if (!url) { setStatus("Please enter a URL.", "err"); return; }
+
+      const btn = $("scrapeBtn");
+      btn.disabled = true;
+      resultsEl.innerHTML = "";
+      setStatus('<span class="spinner"></span> Scraping… this can take a few seconds.', "");
+
+      try {
+        const res = await fetch("/api/scrape", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url,
+            screenshot: $("screenshot").checked,
+            respect_robots: $("robots").checked,
+            crawl_depth: parseInt($("depth").value || "0", 10),
+            max_pages: parseInt($("maxpages").value || "25", 10),
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Scrape failed.");
+
+        const fails = data.failed ? ` · ${data.failed} failed` : "";
+        setStatus(`✓ Scraped ${data.scraped} page(s)${fails}.`, "ok");
+
+        resultsEl.innerHTML = data.pages.map((p) => `
+          <div class="result">
+            <div class="title">${escapeHtml(p.title || "(untitled)")}</div>
+            <div class="meta">${escapeHtml(p.url)} · ${p.links} links</div>
+            <a href="/api/download?dir=${encodeURIComponent(p.dir)}">⬇ Download this page's folder</a>
+          </div>`).join("");
+
+        (data.failures || []).forEach((f) => {
+          resultsEl.innerHTML += `<div class="result"><div class="meta" style="color:var(--danger)">✗ ${escapeHtml(f.url)} — ${escapeHtml(f.error)}</div></div>`;
+        });
+
+        downloadAll.disabled = data.scraped === 0;
+      } catch (err) {
+        setStatus("Error: " + escapeHtml(err.message), "err");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    downloadAll.addEventListener("click", () => {
+      window.location.href = "/api/download";
+    });
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) => (
+        { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+      ));
+    }
+  </script>
+</body>
+</html>

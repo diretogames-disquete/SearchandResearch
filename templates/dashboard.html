@@ -102,6 +102,10 @@
         <label class="opt">Crawl depth <input id="depth" type="number" min="0" max="3" value="0" /></label>
         <label class="opt">Max pages <input id="maxpages" type="number" min="1" max="200" value="25" /></label>
       </div>
+      <div class="opts">
+        <label class="opt"><input id="full" type="checkbox" /> Full capture
+          <span class="hint">(MHTML + HAR + all assets — everything F12 shows)</span></label>
+      </div>
 
       <label style="margin-top:14px;">Where to save</label>
       <div class="opts">
@@ -265,6 +269,7 @@ python scraper.py --urls-file urls.txt --output-dir output</pre>
             respect_robots: $("robots").checked,
             crawl_depth: parseInt($("depth").value || "0", 10),
             max_pages: parseInt($("maxpages").value || "25", 10),
+            full_capture: $("full").checked,
             destination: destination(),
             local_path: $("localPath").value.trim(),
           }),

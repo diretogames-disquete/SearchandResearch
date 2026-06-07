@@ -7,10 +7,20 @@ static HTML.
 
 For every URL it visits it produces, in a per-page output directory:
 
-1. **`page.html`** — the fully rendered raw HTML
+1. **`page.html`** — the fully rendered DOM (what the F12 *Elements* panel shows,
+   i.e. after JavaScript runs — not the raw "View Source")
 2. **`data.json`** — URL, title, all links (resolved to absolute URLs), the
    visible page text, and any custom fields you define via CSS selectors
 3. **`screenshot.png`** — a full-page screenshot (optional, with `--screenshot`)
+
+With **`--full-capture`** (or the dashboard's *Full capture* checkbox) each page
+additionally yields everything DevTools shows:
+
+- **`page.mhtml`** — a single self-contained snapshot with all CSS/JS/images
+  embedded; double-click to reopen the page exactly as captured, offline
+- **`network.har`** — every network request/response (the F12 *Network* tab)
+- **`assets/`** — every downloaded resource (html, css, js, images, fonts, JSON)
+  saved as individual files mirroring their URL paths
 
 A run-level **`index.json`** summarizes everything that was scraped.
 
@@ -112,6 +122,7 @@ python scraper.py https://example.com --crawl-depth 1 --respect-robots --delay 1
 | `--all-domains` | When crawling, also follow links off the start domain | off |
 | `--respect-robots` | Skip URLs disallowed by the site's `robots.txt` | off |
 | `--delay` | Seconds to wait between page loads | `0` |
+| `--full-capture` | Also save MHTML snapshot, HAR, and an `assets/` folder | off |
 | `--headful` | Run with a visible browser window | off (headless) |
 | `--timeout` | Per-page timeout, in milliseconds | `30000` |
 | `--user-agent` | Override the browser user agent | browser default |

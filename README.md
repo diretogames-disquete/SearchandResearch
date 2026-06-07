@@ -29,18 +29,29 @@ playwright install chromium   # one-time: downloads the browser binary
 ## Dashboard
 
 ```bash
-python app.py
-# open http://127.0.0.1:5000
+python app.py        # or double-click run.sh (macOS/Linux) / run.bat (Windows)
 ```
+
+It starts a small local server and **opens the dashboard in your browser
+automatically** (`http://127.0.0.1:5000`). A plain `.html` file opened from disk
+can't drive a headless browser or write files, so this lightweight backend does
+that part — from your side it's still "open and go".
 
 The dashboard gives you:
 
 - a **box to paste the URL** to scrape (plus screenshot / crawl-depth /
   robots.txt / max-pages options);
+- a **destination choice** — save into the repo's `collections/` folder (for you
+  to commit/push yourself; nothing is pushed automatically) **or** into any local
+  folder you type in;
 - **clickable, collapsible instructions** explaining how to set it up and use it;
-- a **Download all (ZIP)** button that packages every result folder and
-  subfolder into one archive, plus a per-page download link for a single
-  page's folder.
+- a **Download results (ZIP)** button that packages the run's folders and
+  subfolders into one archive.
+
+Every run lands in a timestamped folder containing each page's `page.html`,
+`data.json`, optional `screenshot.png`, and a standalone **`report.html`** you
+can double-click to study the scraped text, links, fields, and screenshots
+offline.
 
 ## Command-line usage
 

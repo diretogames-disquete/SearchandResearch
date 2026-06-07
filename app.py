@@ -91,6 +91,7 @@ def api_scrape():
             crawl_depth=int(payload.get("crawl_depth", 0) or 0),
             respect_robots=bool(payload.get("respect_robots")),
             max_pages=int(payload.get("max_pages", 25) or 25),
+            full_capture=bool(payload.get("full_capture")),
         )
     except Exception as exc:  # surface browser/setup errors to the UI
         return jsonify({"error": str(exc)}), 500
@@ -156,6 +157,15 @@ def build_report(run_dir: Path, source_url: str, summary: dict) -> Path:
                 data = {}
 
         shot = page["dir"] + "/screenshot.png" if (page_dir / "screenshot.png").exists() else None
+        # Links to the full-capture artifacts, when present.
+        extra = []
+        if (page_dir / "page.mhtml").exists():
+            extra.append(f'<a href="{esc(page["dir"])}/page.mhtml">MHTML snapshot</a>')
+        if (page_dir / "network.har").exists():
+            extra.append(f'<a href="{esc(page["dir"])}/network.har">network.har</a>')
+        if data.get("assets_count"):
+            extra.append(f'<a href="{esc(page["dir"])}/assets/">assets/ ({data["assets_count"]})</a>')
+        extra_html = (" · " + " · ".join(extra)) if extra else ""
         links = data.get("links", [])
         links_html = "".join(
             f'<li><a href="{esc(l["url"])}">{esc(l.get("text") or l["url"])}</a></li>'
@@ -173,9 +183,9 @@ def build_report(run_dir: Path, source_url: str, summary: dict) -> Path:
           <p class="meta"><a href="{esc(page["url"])}">{esc(page["url"])}</a>
              · status {esc(str(data.get("status")))} · {page["links"]} links</p>
           <p class="files">
-            <a href="{esc(page["dir"])}/page.html">Raw HTML</a> ·
+            <a href="{esc(page["dir"])}/page.html">Rendered HTML</a> ·
             <a href="{esc(page["dir"])}/data.json">data.json</a>
-            {f'· <a href="{esc(shot)}">screenshot</a>' if shot else ''}
+            {f'· <a href="{esc(shot)}">screenshot</a>' if shot else ''}{extra_html}
           </p>
           {f'<a href="{esc(shot)}"><img class="shot" src="{esc(shot)}" alt="screenshot"></a>' if shot else ''}
           {f'<details><summary>Custom fields</summary><table>{fields_html}</table></details>' if fields_html else ''}

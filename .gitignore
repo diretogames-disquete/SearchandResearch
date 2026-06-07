@@ -1,0 +1,17 @@
+# Scraper output
+output/
+*.html
+!fields.example.yaml
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.env
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

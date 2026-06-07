@@ -102,14 +102,33 @@
         <label class="opt">Crawl depth <input id="depth" type="number" min="0" max="3" value="0" /></label>
         <label class="opt">Max pages <input id="maxpages" type="number" min="1" max="200" value="25" /></label>
       </div>
+
+      <label style="margin-top:14px;">Where to save</label>
+      <div class="opts">
+        <label class="opt">
+          <input type="radio" name="dest" value="collections" checked />
+          Repo <code>collections/</code> folder
+        </label>
+        <label class="opt">
+          <input type="radio" name="dest" value="local" />
+          A local folder I choose
+        </label>
+      </div>
+      <div id="localRow" class="row hidden" style="margin-top:8px;">
+        <input id="localPath" type="text" placeholder="e.g. ~/research/site-name" />
+      </div>
+
       <div class="row" style="margin-top:16px;">
         <button id="scrapeBtn">Scrape</button>
-        <button id="downloadAll" class="secondary" disabled>⬇ Download all (ZIP)</button>
+        <button id="downloadAll" class="secondary" disabled>⬇ Download results (ZIP)</button>
       </div>
       <div id="status"></div>
       <div id="results"></div>
       <p class="hint">Crawl depth 0 = just this page. Depth 1 follows same-domain links one hop, etc.
-        The ZIP preserves every page's folder and subfolders (page.html, data.json, screenshot.png).</p>
+        Results save into a timestamped run folder containing each page's
+        <code>page.html</code>, <code>data.json</code>, optional <code>screenshot.png</code>,
+        and a standalone <code>report.html</code> you can double-click to study offline.
+        The ZIP preserves every folder and subfolder.</p>
     </section>
 
     <!-- clickable instructions -->
@@ -128,9 +147,11 @@ playwright install chromium</pre>
       <details>
         <summary>2 · Launch the dashboard</summary>
         <div class="body">
-          Start the web app and open it in your browser:
-          <pre>python app.py
-# visit http://127.0.0.1:5000</pre>
+          Run one command — it starts the local engine and opens this dashboard
+          in your browser automatically:
+          <pre>python app.py</pre>
+          (A plain <code>.html</code> file opened from disk can't drive a browser
+          or write files, so this tiny local server does that part.)
         </div>
       </details>
 
@@ -146,16 +167,33 @@ playwright install chromium</pre>
       </details>
 
       <details>
-        <summary>4 · Download the results</summary>
+        <summary>4 · Choose where results go</summary>
         <div class="body">
-          Click <strong>Download all (ZIP)</strong> to get every result folder and subfolder
-          in one archive, or use the per-page <em>Download</em> link in the results list to grab
-          just one page's folder.
+          Pick a destination under <em>Where to save</em>:
+          <ul>
+            <li><strong>Repo <code>collections/</code> folder</strong> — saved inside this
+              repository so you can review and <code>git commit</code> / <code>git push</code>
+              it yourself (nothing is pushed automatically).</li>
+            <li><strong>A local folder I choose</strong> — type any path
+              (e.g. <code>~/research/site</code>) and results are written there for you to study.</li>
+          </ul>
+          Either way each run lands in a timestamped folder. Click
+          <strong>Download results (ZIP)</strong> for a copy of that run — every folder
+          and subfolder included.
         </div>
       </details>
 
       <details>
-        <summary>5 · Use it from the command line</summary>
+        <summary>5 · Study the scraped content</summary>
+        <div class="body">
+          Every run writes a standalone <code>report.html</code> — double-click it to browse
+          each page's title, visible text, links, custom fields, and screenshot offline. The raw
+          <code>page.html</code> and <code>data.json</code> sit alongside it for digging into the code.
+        </div>
+      </details>
+
+      <details>
+        <summary>6 · Use it from the command line</summary>
         <div class="body">
           The same engine works as a CLI without the dashboard:
           <pre>python scraper.py https://example.com --screenshot
@@ -165,7 +203,7 @@ python scraper.py --urls-file urls.txt --output-dir output</pre>
       </details>
 
       <details>
-        <summary>6 · Extract custom fields (CSS selectors)</summary>
+        <summary>7 · Extract custom fields (CSS selectors)</summary>
         <div class="body">
           Create a YAML/JSON config mapping output keys to CSS selectors and pass it with
           <code>--config</code>. Values land under <code>"fields"</code> in each
@@ -187,19 +225,34 @@ python scraper.py --urls-file urls.txt --output-dir output</pre>
     const statusEl = $("status");
     const resultsEl = $("results");
     const downloadAll = $("downloadAll");
+    let lastRunId = null;
 
     function setStatus(msg, cls) {
       statusEl.className = cls || "";
       statusEl.innerHTML = msg;
     }
 
+    function destination() {
+      return document.querySelector('input[name="dest"]:checked').value;
+    }
+
+    // Reveal the local-path input only when "local" is chosen.
+    document.querySelectorAll('input[name="dest"]').forEach((r) =>
+      r.addEventListener("change", () =>
+        $("localRow").classList.toggle("hidden", destination() !== "local")));
+
     $("scrapeBtn").addEventListener("click", async () => {
       const url = $("url").value.trim();
       if (!url) { setStatus("Please enter a URL.", "err"); return; }
+      if (destination() === "local" && !$("localPath").value.trim()) {
+        setStatus("Enter a local folder path, or pick the collections/ option.", "err");
+        return;
+      }
 
       const btn = $("scrapeBtn");
       btn.disabled = true;
       resultsEl.innerHTML = "";
+      downloadAll.disabled = true;
       setStatus('<span class="spinner"></span> Scraping… this can take a few seconds.', "");
 
       try {
@@ -212,19 +265,24 @@ python scraper.py --urls-file urls.txt --output-dir output</pre>
             respect_robots: $("robots").checked,
             crawl_depth: parseInt($("depth").value || "0", 10),
             max_pages: parseInt($("maxpages").value || "25", 10),
+            destination: destination(),
+            local_path: $("localPath").value.trim(),
           }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Scrape failed.");
 
+        lastRunId = data.run_id;
         const fails = data.failed ? ` · ${data.failed} failed` : "";
-        setStatus(`✓ Scraped ${data.scraped} page(s)${fails}.`, "ok");
+        setStatus(
+          `✓ Scraped ${data.scraped} page(s)${fails}.<br>` +
+          `Saved to <code>${escapeHtml(data.saved_to)}</code><br>` +
+          `Open <code>${escapeHtml(data.report)}</code> to study it offline.`, "ok");
 
         resultsEl.innerHTML = data.pages.map((p) => `
           <div class="result">
             <div class="title">${escapeHtml(p.title || "(untitled)")}</div>
             <div class="meta">${escapeHtml(p.url)} · ${p.links} links</div>
-            <a href="/api/download?dir=${encodeURIComponent(p.dir)}">⬇ Download this page's folder</a>
           </div>`).join("");
 
         (data.failures || []).forEach((f) => {
@@ -240,7 +298,7 @@ python scraper.py --urls-file urls.txt --output-dir output</pre>
     });
 
     downloadAll.addEventListener("click", () => {
-      window.location.href = "/api/download";
+      if (lastRunId) window.location.href = "/api/download?run=" + encodeURIComponent(lastRunId);
     });
 
     function escapeHtml(s) {

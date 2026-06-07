@@ -1,0 +1,27 @@
+# Example field-extraction config for scraper.py
+#
+# Run with:  python scraper.py https://news.ycombinator.com --config fields.example.yaml
+#
+# Each entry under `fields` maps an output key to a CSS selector. Two forms:
+#
+#   1. Shorthand  ->  "name: <css selector>"  (grabs the first match's text)
+#   2. Full form  ->  with options:
+#        selector: <css selector>   (required)
+#        multiple:  true|false       (default false; true returns a list)
+#        attr:      text|html|<html attribute, e.g. href, src>  (default text)
+
+fields:
+  # Shorthand: first matching element's text content.
+  page_heading: "h1"
+
+  # Full form: collect every story title on the page.
+  story_titles:
+    selector: ".titleline > a"
+    multiple: true
+    attr: text
+
+  # Pull an attribute instead of text (here, the story URLs).
+  story_links:
+    selector: ".titleline > a"
+    multiple: true
+    attr: href

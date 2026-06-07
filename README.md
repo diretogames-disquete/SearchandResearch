@@ -14,10 +14,15 @@ For every URL it visits it produces, in a per-page output directory:
 
 A run-level **`index.json`** summarizes everything that was scraped.
 
-It works two ways: as a **web dashboard** (paste a URL, read clickable
-instructions, download results as a ZIP) and as a **command-line tool**. It can
-also **crawl** — following same-domain links to a configurable depth — and
-optionally honor each site's `robots.txt`.
+It works three ways:
+
+- a **web dashboard** (`python app.py`) — paste a URL, read clickable
+  instructions, save to the repo or a local folder, download a ZIP;
+- a **command-line tool** (`python scraper.py`) — scriptable, can **crawl**
+  same-domain links to a depth and honor each site's `robots.txt`;
+- a **standalone HTML file** ([`standalone.html`](standalone.html)) — a single
+  file you double-click; it scrapes and zips entirely in your browser with no
+  Python and no server (static HTML only; subject to CORS — see below).
 
 ## Install
 
@@ -25,6 +30,19 @@ optionally honor each site's `robots.txt`.
 pip install -r requirements.txt
 playwright install chromium   # one-time: downloads the browser binary
 ```
+
+## Standalone HTML (no install, no server)
+
+Just double-click [`standalone.html`](standalone.html). Paste a URL, optionally
+add CSS-selector fields, and download a ZIP (a folder per page with `page.html`,
+`data.json`, `text.txt`, `links.json`, plus a `report.html`). Everything runs in
+your browser — nothing is uploaded.
+
+Trade-offs vs. the Python dashboard: it fetches **static HTML only** (no
+JavaScript-rendered pages), is subject to **CORS** (use the optional proxy field
+for sites that block cross-origin fetches), and can only **download** results (it
+can't write into the repo). For JS-heavy sites, screenshots, crawling, or saving
+into `collections/`, use the Python dashboard below.
 
 ## Dashboard
 

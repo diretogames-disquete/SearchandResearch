@@ -164,6 +164,13 @@ output/
   and don't hammer servers with rapid requests.
 - The `output/` directory is git-ignored by default.
 
+## Extras
+
+- [`visualizer/`](visualizer/) — an offline, audio-reactive 3D "anomaly
+  detector" (Three.js + GSAP + Web Audio): a reconstruction of
+  [filipz's CodePen audio visualizer](https://codepen.io/filipz/pen/yyyRgry)
+  extended with switchable shapes. Open `visualizer/index.html` to try it.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

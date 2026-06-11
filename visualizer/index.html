@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<!--
+  ANOMALY DETECTOR — audio-reactive 3D visualizer
+  Reconstruction of "[gsap/threejs/inertia] ❍ Audio Visualizer with THREEJS"
+  by Filip Zrnzevic — https://codepen.io/filipz/pen/yyyRgry
+  (built for the Webflow x GSAP Community Challenge #2: Draggable & Inertia,
+   documented by the author on Codrops, June 2025)
+
+  This is an original implementation of the same feature set, extended with a
+  MORPHOLOGY panel that lets the anomaly take different shapes.
+  Libraries are vendored locally (vendor/) so the page also works offline:
+  open this file directly, or serve the folder with any static server.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>ANOMALY DETECTOR — Audio Visualizer (THREE.js / GSAP / Web Audio)</title>
+<link rel="icon" href="data:," />
+<style>
+  :root {
+    --accent:      #ff7a18;
+    --accent-hot:  #ffd9b0;
+    --ink:         rgba(255, 255, 255, 0.82);
+    --ink-dim:     rgba(255, 255, 255, 0.38);
+    --ink-faint:   rgba(255, 255, 255, 0.16);
+    --panel-bg:    linear-gradient(165deg, rgba(17,17,20,0.86), rgba(7,7,9,0.88));
+    --panel-line:  rgba(255, 255, 255, 0.14);
+    --mono: ui-monospace, "JetBrains Mono", "Fira Code", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    background: #030304;
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    user-select: none;
+  }
+
+  #app { position: fixed; inset: 0; }
+
+  /* ---------- stage ---------- */
+  #stage {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(58% 58% at 50% 46%, rgba(255, 110, 30, 0.075), rgba(0,0,0,0) 62%),
+      radial-gradient(120% 120% at 50% 50%, #0a0a0d 0%, #050506 55%, #010102 100%);
+  }
+  #scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  #scene.grab     { cursor: grab; }
+  #scene.grabbing { cursor: grabbing; }
+
+  /* calibration ring + crosshair behind the orb */
+  #reticle {
+    position: absolute; left: 50%; top: 50%;
+    width: min(54vmin, 470px); height: min(54vmin, 470px);
+    transform: translate(-50%, -50%);
+    border: 1px dashed rgba(255, 255, 255, 0.10);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: spin 90s linear infinite;
+  }
+  #reticle::after {
+    content: ""; position: absolute; inset: -7px;
+    border: 1px solid rgba(255, 122, 24, 0.10); border-radius: 50%;
+  }
+  #reticle.flash { border-color: rgba(255, 122, 24, 0.55); }
+  @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+  .axis { position: absolute; background: rgba(255,255,255,0.05); pointer-events: none; }
+  .axis.h { left: 0; right: 0; top: 50%; height: 1px; }
+  .axis.v { top: 0; bottom: 0; left: 50%; width: 1px; }
+
+  /* ---------- CRT overlays ---------- */
+  #scanlines {
+    position: absolute; inset: 0; pointer-events: none; z-index: 40;
+    background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.028) 0 1px, rgba(0,0,0,0) 1px 3px);
+    mix-blend-mode: overlay;
+  }
+  #vignette {
+    position: absolute; inset: 0; pointer-events: none; z-index: 41;
+    background: radial-gradient(85% 85% at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.5) 100%);
+  }
+  #grain {
+    position: absolute; inset: -100px; pointer-events: none; z-index: 42; opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+    animation: grain 0.9s steps(4) infinite;
+  }
+  @keyframes grain {
+    0% { transform: translate(0,0); } 25% { transform: translate(-34px,22px); }
+    50% { transform: translate(20px,-30px); } 75% { transform: translate(-12px,-14px); }
+    100% { transform: translate(28px,16px); }
+  }
+
+  /* ---------- corner HUD ---------- */
+  .corner { position: fixed; z-index: 60; line-height: 1.85; pointer-events: none; }
+  .corner a { pointer-events: auto; }
+  .corner.tl { top: 22px; left: 24px; }
+  .corner.tr { top: 22px; right: 24px; text-align: right; }
+  .corner.bl { bottom: 20px; left: 24px; }
+  .corner.br { bottom: 20px; right: 24px; text-align: right; }
+  .corner .hi { color: var(--accent); }
+  .corner .dim, .corner a { color: var(--ink-dim); text-decoration: none; }
+  .corner a:hover { color: var(--accent); }
+  .corner .big { font-size: 12px; letter-spacing: 0.22em; color: var(--ink); }
+  kbd {
+    font-family: inherit; font-size: 9px; color: var(--ink);
+    border: 1px solid var(--panel-line); border-bottom-width: 2px;
+    border-radius: 3px; padding: 1px 4px; margin: 0 1px;
+  }
+
+  .dot {
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent); margin-right: 7px; vertical-align: 1px;
+    box-shadow: 0 0 8px var(--accent);
+    animation: blink 1.1s steps(2) infinite;
+  }
+  .dot.idle { background: var(--ink-dim); box-shadow: none; animation-duration: 2.4s; }
+  @keyframes blink { 50% { opacity: 0.25; } }
+
+  /* ---------- panels ---------- */
+  .panel {
+    position: fixed; z-index: 70; width: 232px;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-line);
+    box-shadow: 0 22px 60px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    cursor: grab; touch-action: none;
+  }
+  .panel:active { cursor: grabbing; }
+  .panel::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 0; height: 1px;
+    background: linear-gradient(90deg, var(--accent), rgba(255,122,24,0) 65%);
+    opacity: 0.85;
+  }
+  /* corner notches */
+  .panel i.nw, .panel i.ne, .panel i.sw, .panel i.se {
+    position: absolute; width: 7px; height: 7px; border: 1px solid rgba(255,255,255,0.35); pointer-events: none;
+  }
+  .panel i.nw { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+  .panel i.ne { top: -1px; right: -1px; border-left: 0; border-bottom: 0; }
+  .panel i.sw { bottom: -1px; left: -1px; border-right: 0; border-top: 0; }
+  .panel i.se { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
+
+  .panel .head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,0.08);
+    color: var(--ink); font-size: 9px; letter-spacing: 0.22em;
+  }
+  .panel .head .grip { color: var(--ink-faint); letter-spacing: 0.05em; }
+  .panel .body { padding: 12px; }
+  .panel.beat::before { opacity: 1; box-shadow: 0 0 14px var(--accent); }
+
+  .row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .row:last-child { margin-bottom: 0; }
+  .lab { color: var(--ink-dim); font-size: 9px; }
+  .val { color: var(--accent); font-size: 9px; min-width: 38px; text-align: right; }
+
+  /* sliders */
+  .slider { display: grid; grid-template-columns: 74px 1fr 40px; gap: 8px; align-items: center; margin-bottom: 9px; }
+  .slider:last-child { margin-bottom: 0; }
+  input[type="range"] {
+    -webkit-appearance: none; appearance: none; width: 100%; height: 14px;
+    background: transparent; cursor: ew-resize;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 2px; background: linear-gradient(90deg, var(--accent) var(--fill, 50%), rgba(255,255,255,0.14) var(--fill, 50%));
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 9px; height: 9px; margin-top: -3.5px;
+    background: #0a0a0c; border: 1px solid var(--accent);
+    box-shadow: 0 0 7px rgba(255,122,24,0.7);
+  }
+  input[type="range"]::-moz-range-track { height: 2px; background: rgba(255,255,255,0.14); }
+  input[type="range"]::-moz-range-progress { height: 2px; background: var(--accent); }
+  input[type="range"]::-moz-range-thumb {
+    width: 8px; height: 8px; border-radius: 0; background: #0a0a0c;
+    border: 1px solid var(--accent); box-shadow: 0 0 7px rgba(255,122,24,0.7);
+  }
+
+  /* buttons */
+  .btn {
+    font-family: inherit; font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--ink-dim); background: rgba(255,255,255,0.03);
+    border: 1px solid var(--panel-line); padding: 6px 0; cursor: pointer;
+    transition: color .15s, border-color .15s, background .15s, box-shadow .15s;
+  }
+  .btn:hover { color: var(--ink); border-color: rgba(255,255,255,0.4); }
+  .btn.on {
+    color: var(--accent); border-color: var(--accent);
+    background: rgba(255,122,24,0.08); box-shadow: 0 0 12px rgba(255,122,24,0.25), inset 0 0 10px rgba(255,122,24,0.1);
+  }
+
+  .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+  /* transport */
+  .transport { display: grid; grid-template-columns: 46px 1fr; gap: 12px; align-items: center; margin-bottom: 12px; }
+  #play {
+    width: 46px; height: 46px; position: relative; cursor: pointer;
+    background: rgba(255,122,24,0.06); border: 1px solid var(--accent);
+    box-shadow: 0 0 16px rgba(255,122,24,0.28), inset 0 0 12px rgba(255,122,24,0.12);
+  }
+  #play:hover { background: rgba(255,122,24,0.14); }
+  #play .ico { position: absolute; inset: 0; }
+  /* play triangle */
+  #play .ico::before {
+    content: ""; position: absolute; left: 18px; top: 14px;
+    border-left: 13px solid var(--accent); border-top: 8.5px solid transparent; border-bottom: 8.5px solid transparent;
+    transition: transform .15s;
+  }
+  /* pause bars */
+  #play.playing .ico::before {
+    border: 0; width: 4px; height: 16px; left: 17px; top: 15px; background: var(--accent);
+  }
+  #play.playing .ico::after {
+    content: ""; position: absolute; width: 4px; height: 16px; left: 25px; top: 15px; background: var(--accent);
+  }
+  .tmeta { min-width: 0; }
+  .tmeta .track { color: var(--ink); font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tmeta .time { color: var(--ink-dim); font-size: 9px; margin-top: 4px; }
+  .tmeta .time b { color: var(--accent); font-weight: normal; }
+
+  /* morphology grid */
+  .shapes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .shapes .btn { padding: 7px 0 5px; }
+  .shapes .btn small { display: block; font-size: 8px; letter-spacing: 0.1em; margin-top: 3px; }
+  .shapes .btn svg { display: block; margin: 0 auto; width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.1; }
+
+  /* telemetry canvases */
+  .scopes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .scopes canvas {
+    width: 100%; height: 56px; display: block;
+    background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.08);
+  }
+  .meters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+  .meters .cell { border: 1px solid rgba(255,255,255,0.08); padding: 6px 7px; }
+  .meters .cell .lab { display: block; font-size: 8px; }
+  .meters .cell .val { display: block; text-align: left; font-size: 11px; margin-top: 3px; min-width: 0; }
+
+  /* drop overlay + fatal error */
+  #drop, #fatal {
+    position: fixed; inset: 0; z-index: 90; display: none;
+    align-items: center; justify-content: center; text-align: center;
+    background: rgba(3,3,4,0.82); backdrop-filter: blur(4px);
+    color: var(--ink); font-size: 12px; letter-spacing: 0.3em; line-height: 2.2;
+  }
+  #drop.show, #fatal.show { display: flex; }
+  #drop .frame, #fatal .frame { border: 1px dashed var(--accent); padding: 34px 48px; }
+
+  @media (max-width: 860px) {
+    .panel { width: 204px; transform-origin: top left; }
+    .corner.tr .opt, .corner.br .opt { display: none; }
+    body { font-size: 9px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="stage">
+    <div class="axis h"></div>
+    <div class="axis v"></div>
+    <div id="reticle"></div>
+    <canvas id="scene"></canvas>
+  </div>
+
+  <!-- corner HUD -->
+  <div class="corner tl">
+    <div class="big">ANOMALY&nbsp;DETECTOR</div>
+    <div class="dim">AUDIO VISUALIZER — THREE.JS / GSAP / WEB AUDIO</div>
+    <div class="dim">UNIT <span class="hi">FZ-yyyRgry</span> · REV 2.0</div>
+  </div>
+  <div class="corner tr">
+    <div><a href="https://codepen.io/filipz/pen/yyyRgry" target="_blank" rel="noopener">ORIGINAL: FILIP ZRNZEVIC — CODEPEN /yyyRgry</a></div>
+    <div class="dim opt">CHALLENGE #2 — DRAGGABLE &amp; INERTIA</div>
+    <div class="dim opt">RECONSTRUCTION + MORPHOLOGY EXTENSION</div>
+  </div>
+  <div class="corner bl">
+    <div><span class="dot idle" id="statusDot"></span><span id="statusText">BOOT SEQUENCE COMPLETE</span></div>
+    <div class="dim" id="statusSub">AWAITING SIGNAL — PRESS PLAY</div>
+  </div>
+  <div class="corner br">
+    <div class="dim">DRAG PANELS — GRAB &amp; FLING THE ANOMALY</div>
+    <div class="opt"><kbd>SPACE</kbd> PLAY <span class="dim">·</span> <kbd>1–8</kbd> MORPHOLOGY <span class="dim">·</span> <kbd>R</kbd> RANDOM</div>
+  </div>
+
+  <!-- SIGNAL panel -->
+  <div class="panel" id="p-audio" style="left: 24px; top: 112px;">
+    <i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i>
+    <div class="head"><span><span class="dot idle"></span>SIGNAL</span><span class="grip">:::</span></div>
+    <div class="body">
+      <div class="transport">
+        <div id="play" role="button" aria-label="play/pause" tabindex="0"><span class="ico"></span></div>
+        <div class="tmeta">
+          <div class="track" id="trackName">DEMO SIGNAL 116</div>
+          <div class="time"><b id="timeCur">00:00</b> / <span id="timeState">STANDBY</span></div>
+        </div>
+      </div>
+      <div class="seg" style="margin-bottom: 12px;">
+        <button class="btn on" id="srcDemo">DEMO</button>
+        <button class="btn" id="srcFile">FILE</button>
+        <button class="btn" id="srcMic">MIC</button>
+      </div>
+      <div class="slider">
+        <span class="lab">VOLUME</span>
+        <input type="range" id="volume" min="0" max="1" step="0.01" value="0.8" />
+        <span class="val" id="volumeVal">80%</span>
+      </div>
+      <input type="file" id="fileInput" accept="audio/*" hidden />
+    </div>
+  </div>
+
+  <!-- PARAMETERS panel -->
+  <div class="panel" id="p-params" style="right: 24px; top: 112px;">
+    <i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i>
+    <div class="head"><span><span class="dot idle"></span>PARAMETERS</span><span class="grip">:::</span></div>
+    <div class="body">
+      <div class="slider"><span class="lab">ROTATION</span><input type="range" id="rotation"   min="0" max="2"   step="0.01" value="0.45"><span class="val" id="rotationVal">0.45</span></div>
+      <div class="slider"><span class="lab">RESOLUTION</span><input type="range" id="resolution" min="0" max="1"  step="0.01" value="0.55"><span class="val" id="resolutionVal">—</span></div>
+      <div class="slider"><span class="lab">DISTORTION</span><input type="range" id="distortion" min="0" max="2"  step="0.01" value="0.75"><span class="val" id="distortionVal">0.75</span></div>
+      <div class="slider"><span class="lab">REACTIVITY</span><input type="range" id="reactivity" min="0" max="2"  step="0.01" value="1.00"><span class="val" id="reactivityVal">1.00</span></div>
+      <div class="slider"><span class="lab">SENSITIVITY</span><input type="range" id="sensitivity" min="0.4" max="2.4" step="0.01" value="1.20"><span class="val" id="sensitivityVal">1.20</span></div>
+    </div>
+  </div>
+
+  <!-- MORPHOLOGY panel (extension: different shapes) -->
+  <div class="panel" id="p-morph" style="right: 24px; bottom: 96px;">
+    <i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i>
+    <div class="head"><span><span class="dot idle"></span>MORPHOLOGY</span><span class="grip">:::</span></div>
+    <div class="body">
+      <div class="shapes" id="shapeGrid"></div>
+      <div class="row" style="margin-top: 11px;">
+        <span class="lab">CURRENT FORM</span><span class="val" id="shapeName">ICOSAHEDRON</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TELEMETRY panel -->
+  <div class="panel" id="p-tele" style="left: 24px; bottom: 96px; width: 268px;">
+    <i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i>
+    <div class="head"><span><span class="dot idle"></span>TELEMETRY</span><span class="grip">:::</span></div>
+    <div class="body">
+      <div class="scopes">
+        <canvas id="spectrum"></canvas>
+        <canvas id="scope"></canvas>
+      </div>
+      <div class="meters">
+        <div class="cell"><span class="lab">LEVEL</span><span class="val" id="mLevel">0%</span></div>
+        <div class="cell"><span class="lab">PEAK</span><span class="val" id="mPeak">-∞ dB</span></div>
+        <div class="cell"><span class="lab">PULSE</span><span class="val" id="mBpm">--- BPM</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="scanlines"></div>
+  <div id="vignette"></div>
+  <div id="grain"></div>
+
+  <div id="drop"><div class="frame">DROP AUDIO FILE<br /><span class="dim" style="font-size:9px;">LOCAL DECODE — NOTHING IS UPLOADED</span></div></div>
+  <div id="fatal"><div class="frame">RENDERER OFFLINE<br /><span id="fatalMsg" style="font-size:9px; letter-spacing:0.18em;">WEBGL REQUIRED</span></div></div>
+
+</div>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/Draggable.min.js"></script>
+<script src="vendor/InertiaPlugin.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

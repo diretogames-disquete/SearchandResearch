@@ -169,7 +169,8 @@ output/
 - [`visualizer/`](visualizer/) — an offline, audio-reactive 3D "anomaly
   detector" (Three.js + GSAP + Web Audio): a reconstruction of
   [filipz's CodePen audio visualizer](https://codepen.io/filipz/pen/yyyRgry)
-  extended with switchable shapes. Open `visualizer/index.html` to try it.
+  extended with switchable shapes. Open `visualizer/standalone.html`
+  (single self-contained file) to try it.
 
 ## License
 

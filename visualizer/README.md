@@ -13,11 +13,14 @@ as the spec). All credit for the concept and design goes to Filip Zrnzevic.
 
 ## Run it
 
-No build, no network needed — libraries are vendored in `vendor/`:
+No build, no network needed:
 
 ```bash
-# either just open the file
-open visualizer/index.html          # double-clicking works too (file://)
+# easiest — single self-contained file (everything inlined):
+open visualizer/standalone.html     # double-clicking works too (file://)
+
+# or the split sources:
+open visualizer/index.html          # loads app.js + vendor/ relatively
 
 # or serve the folder
 python3 -m http.server -d visualizer 8000   # → http://localhost:8000
@@ -92,7 +95,12 @@ form is active.
 
 ```
 visualizer/
-├── index.html   markup + all styling (HUD, panels, CRT overlays)
-├── app.js       scene, shaders, shapes, audio engine, interactions
-└── vendor/      three.js r149 · gsap 3.13 + Draggable + InertiaPlugin
+├── standalone.html      single-file bundle — just open it, nothing else needed
+├── index.html           markup + all styling (HUD, panels, CRT overlays)
+├── app.js               scene, shaders, shapes, audio engine, interactions
+├── vendor/              three.js r149 · gsap 3.13 + Draggable + InertiaPlugin
+└── build_standalone.py  regenerates standalone.html from the sources above
 ```
+
+`standalone.html` is generated — edit `index.html`/`app.js` and rerun
+`python3 build_standalone.py` to rebuild it.

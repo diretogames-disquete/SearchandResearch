@@ -67,29 +67,53 @@ python3 -m http.server -d visualizer 8000   # → http://localhost:8000
 | Control sliders | The original’s set: **ROTATION**, **RESOLUTION** (live retessellation, vertex-count readout), **DISTORTION**, **REACTIVITY**, **SENSITIVITY** — plus VOLUME |
 | Transport | Play/pause (button morphs ▶/⏸), elapsed time, track label, status line |
 | Audio sources | **DEMO** — procedural 116 BPM synth loop (kick/clap/hats/bass/stabs/pad, echo send), fully offline; **FILE** — picker or drag-&-drop, decoded locally; **MIC** — analysis-only routing (no feedback). The original streamed an mp3; the synth keeps this copy self-contained |
-| Keyboard | `SPACE` play/pause · `1–8` select shape · `R` random shape |
+| Keyboard | `SPACE` play/pause · `1–9`/`0` select shape · `←`/`→` cycle shapes · `C` next colour scheme · `F` focus mode · `R` random shape |
 | Misc | Status log rotation, LEVEL/PEAK dB/PULSE BPM meters, DPR-capped resize, WebGL failure overlay |
 
-### Added in this version — MORPHOLOGY (different shapes)
+### Added in this version (beyond the original)
 
-The original anomaly is an icosahedron only. The **MORPHOLOGY** panel (and
-keys `1–8`) reshapes the lattice while keeping the full audio-reactive
-treatment:
+**MORPHOLOGY — 16 shapes.** The original anomaly is an icosahedron only.
+The MORPHOLOGY panel (keys `1–9`/`0`, `←`/`→` to cycle, `R` random) reshapes
+the lattice while keeping the full audio-reactive treatment:
 
-| # | Form | Geometry |
-| --- | --- | --- |
-| 1 | ICOSAHEDRON | `IcosahedronGeometry` |
-| 2 | SPHERE | `SphereGeometry` |
-| 3 | TORUS | `TorusGeometry` |
-| 4 | TORUS KNOT | `TorusKnotGeometry` |
-| 5 | OCTAHEDRON | `OctahedronGeometry` |
-| 6 | DODECAHEDRON | `DodecahedronGeometry` |
-| 7 | PRISM CUBE | `BoxGeometry` (segmented) |
-| 8 | CAPSULE | `CapsuleGeometry` |
+| # | Form | Geometry | # | Form | Geometry |
+| --- | --- | --- | --- | --- | --- |
+| 1 | ICOSAHEDRON | `IcosahedronGeometry` | 9 | TETRAHEDRON | `TetrahedronGeometry` |
+| 2 | SPHERE | `SphereGeometry` | 10 | PYRAMID | `ConeGeometry` (4 sides) |
+| 3 | TORUS | `TorusGeometry` | 11 | CONE | `ConeGeometry` |
+| 4 | TORUS KNOT | `TorusKnotGeometry` | 12 | CYLINDER | `CylinderGeometry` |
+| 5 | OCTAHEDRON | `OctahedronGeometry` | 13 | GEMSTONE | stretched `OctahedronGeometry` |
+| 6 | DODECAHEDRON | `DodecahedronGeometry` | 14 | HALO RING | thin `TorusGeometry` |
+| 7 | PRISM CUBE | `BoxGeometry` (segmented) | 15 | HELIX COIL | `TubeGeometry` on a custom helix curve |
+| 8 | CAPSULE | `CapsuleGeometry` | 16 | STELLATED | `ExtrudeGeometry` 5-point star |
 
 Switching plays a GSAP morph (back-ease implosion → geometry swap → elastic
 overshoot + pulse flash), and the RESOLUTION slider retessellates whichever
 form is active.
+
+**FRACTURE — way more breaks.** Every geometry is converted to non-indexed
+triangles with per-face centroid/seed attributes; a quantized per-face noise
+field moves whole triangles rigidly so the shell visibly tears, shards burst
+outward from the centre, and beats kick the fragments apart. The glowing core
+keeps a low fracture value so light leaks through the cracks. Controlled by
+the new FRACTURE slider; DISTORTION and REACTIVITY ranges were raised too.
+
+**CHROMA — 10 colour schemes.** EMBER, CRYO, VIRIDIAN, ULTRAVIOLET, CRIMSON,
+SOLAR, NEON ROSE, ABYSS AQUA, GHOST, ACID. Pick a swatch (PARAMETERS panel)
+or hit `C` to step through; CYCLE auto-rotates every 8s. Shader colours tween
+via GSAP and the whole HUD (accents, sliders, VU, spectrum, scope) follows
+through CSS variables.
+
+**FOCUS mode.** Every panel header has a fold button (`—`/`+`), and the
+◈ FOCUS button (or `F`) collapses SIGNAL/PARAMETERS/TELEMETRY, dims the corner
+HUD and dollies the camera in so the anomaly and MORPHOLOGY take the screen.
+
+**More signal/telemetry bells & whistles.** SIGNAL gains an ECHO send
+(feedback-delay wet control) and a 16-segment VU LED strip; TELEMETRY gains
+BASS/MID/TREB band meters and BEATS/FPS/FORM readout cells.
+
+**The TR corner** now carries a small ode to music, poetry and the pursuit of
+harmony (attribution moved to the TL corner).
 
 ## Files
 

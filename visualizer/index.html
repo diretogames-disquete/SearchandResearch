@@ -20,6 +20,7 @@
 <style>
   :root {
     --accent:      #ff7a18;
+    --accent-rgb:  255, 122, 24;
     --accent-hot:  #ffd9b0;
     --ink:         rgba(255, 255, 255, 0.82);
     --ink-dim:     rgba(255, 255, 255, 0.38);
@@ -68,9 +69,9 @@
   }
   #reticle::after {
     content: ""; position: absolute; inset: -7px;
-    border: 1px solid rgba(255, 122, 24, 0.10); border-radius: 50%;
+    border: 1px solid rgba(var(--accent-rgb), 0.10); border-radius: 50%;
   }
-  #reticle.flash { border-color: rgba(255, 122, 24, 0.55); }
+  #reticle.flash { border-color: rgba(var(--accent-rgb), 0.55); }
   @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
   .axis { position: absolute; background: rgba(255,255,255,0.05); pointer-events: none; }
@@ -175,13 +176,13 @@
   input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none; width: 9px; height: 9px; margin-top: -3.5px;
     background: #0a0a0c; border: 1px solid var(--accent);
-    box-shadow: 0 0 7px rgba(255,122,24,0.7);
+    box-shadow: 0 0 7px rgba(var(--accent-rgb), 0.7);
   }
   input[type="range"]::-moz-range-track { height: 2px; background: rgba(255,255,255,0.14); }
   input[type="range"]::-moz-range-progress { height: 2px; background: var(--accent); }
   input[type="range"]::-moz-range-thumb {
     width: 8px; height: 8px; border-radius: 0; background: #0a0a0c;
-    border: 1px solid var(--accent); box-shadow: 0 0 7px rgba(255,122,24,0.7);
+    border: 1px solid var(--accent); box-shadow: 0 0 7px rgba(var(--accent-rgb), 0.7);
   }
 
   /* buttons */
@@ -194,7 +195,7 @@
   .btn:hover { color: var(--ink); border-color: rgba(255,255,255,0.4); }
   .btn.on {
     color: var(--accent); border-color: var(--accent);
-    background: rgba(255,122,24,0.08); box-shadow: 0 0 12px rgba(255,122,24,0.25), inset 0 0 10px rgba(255,122,24,0.1);
+    background: rgba(var(--accent-rgb), 0.08); box-shadow: 0 0 12px rgba(var(--accent-rgb), 0.25), inset 0 0 10px rgba(var(--accent-rgb), 0.1);
   }
 
   .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
@@ -203,10 +204,10 @@
   .transport { display: grid; grid-template-columns: 46px 1fr; gap: 12px; align-items: center; margin-bottom: 12px; }
   #play {
     width: 46px; height: 46px; position: relative; cursor: pointer;
-    background: rgba(255,122,24,0.06); border: 1px solid var(--accent);
-    box-shadow: 0 0 16px rgba(255,122,24,0.28), inset 0 0 12px rgba(255,122,24,0.12);
+    background: rgba(var(--accent-rgb), 0.06); border: 1px solid var(--accent);
+    box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.28), inset 0 0 12px rgba(var(--accent-rgb), 0.12);
   }
-  #play:hover { background: rgba(255,122,24,0.14); }
+  #play:hover { background: rgba(var(--accent-rgb), 0.14); }
   #play .ico { position: absolute; inset: 0; }
   /* play triangle */
   #play .ico::before {
@@ -243,6 +244,50 @@
   .meters .cell .lab { display: block; font-size: 8px; }
   .meters .cell .val { display: block; text-align: left; font-size: 11px; margin-top: 3px; min-width: 0; }
 
+  /* panel fold + focus mode */
+  .fold {
+    background: none; border: 0; color: var(--ink-dim);
+    font: inherit; font-size: 11px; line-height: 1; padding: 0 2px;
+    cursor: pointer; letter-spacing: 0;
+  }
+  .fold:hover { color: var(--accent); }
+  .panel .body { overflow: hidden; }
+  .corner { transition: opacity 0.5s; }
+  body.focus .corner { opacity: 0.22; }
+  #focusBtn {
+    position: fixed; right: 24px; bottom: 76px; z-index: 80;
+    padding: 7px 16px; cursor: pointer;
+  }
+
+  /* VU meter */
+  .vu { display: flex; gap: 3px; margin-top: 10px; }
+  .vu i {
+    flex: 1; height: 5px; background: rgba(255,255,255,0.08);
+    transition: background 0.06s, box-shadow 0.06s;
+  }
+  .vu i.lit { background: rgba(var(--accent-rgb), 0.85); box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.6); }
+  .vu i.hot { background: var(--accent-hot); box-shadow: 0 0 8px var(--accent-hot); }
+
+  /* band meters */
+  .bands { margin-top: 10px; display: grid; gap: 5px; }
+  .bandrow { display: grid; grid-template-columns: 30px 1fr; gap: 8px; align-items: center; }
+  .bandrow .lab { font-size: 8px; }
+  .bandrow .bar { height: 3px; background: rgba(255,255,255,0.08); position: relative; }
+  .bandrow .bar i {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 0%;
+    background: linear-gradient(90deg, rgba(var(--accent-rgb), 0.55), var(--accent));
+    box-shadow: 0 0 6px rgba(var(--accent-rgb), 0.5);
+  }
+
+  /* chroma swatches */
+  .swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 9px; }
+  .swatches button {
+    height: 15px; border: 1px solid rgba(255,255,255,0.18); cursor: pointer;
+    opacity: 0.65; transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s;
+  }
+  .swatches button:hover { opacity: 1; }
+  .swatches button.on { opacity: 1; outline: 1px solid #fff; outline-offset: 1px; box-shadow: 0 0 10px rgba(255,255,255,0.25); }
+
   /* drop overlay + fatal error */
   #drop, #fatal {
     position: fixed; inset: 0; z-index: 90; display: none;
@@ -274,12 +319,12 @@
   <div class="corner tl">
     <div class="big">ANOMALY&nbsp;DETECTOR</div>
     <div class="dim">AUDIO VISUALIZER — THREE.JS / GSAP / WEB AUDIO</div>
-    <div class="dim">UNIT <span class="hi">FZ-yyyRgry</span> · REV 2.0</div>
+    <div class="dim">UNIT <span class="hi">FZ-yyyRgry</span> · REV 3.0 · AFTER <a href="https://codepen.io/filipz/pen/yyyRgry" target="_blank" rel="noopener">FILIP ZRNZEVIC</a></div>
   </div>
   <div class="corner tr">
-    <div><a href="https://codepen.io/filipz/pen/yyyRgry" target="_blank" rel="noopener">ORIGINAL: FILIP ZRNZEVIC — CODEPEN /yyyRgry</a></div>
-    <div class="dim opt">CHALLENGE #2 — DRAGGABLE &amp; INERTIA</div>
-    <div class="dim opt">RECONSTRUCTION + MORPHOLOGY EXTENSION</div>
+    <div class="big">MUSIC IS POETRY <span class="hi">THE BODY CAN HEAR</span></div>
+    <div class="dim">EVERY FREQUENCY A VERSE — EVERY PULSE A HEARTBEAT</div>
+    <div class="dim opt">TUNED, ALWAYS, TO THE PURSUIT OF HARMONY</div>
   </div>
   <div class="corner bl">
     <div><span class="dot idle" id="statusDot"></span><span id="statusText">BOOT SEQUENCE COMPLETE</span></div>
@@ -287,13 +332,14 @@
   </div>
   <div class="corner br">
     <div class="dim">DRAG PANELS — GRAB &amp; FLING THE ANOMALY</div>
-    <div class="opt"><kbd>SPACE</kbd> PLAY <span class="dim">·</span> <kbd>1–8</kbd> MORPHOLOGY <span class="dim">·</span> <kbd>R</kbd> RANDOM</div>
+    <div class="opt"><kbd>SPACE</kbd> PLAY <span class="dim">·</span> <kbd>1–9</kbd><kbd>0</kbd> FORM <span class="dim">·</span> <kbd>←→</kbd> CYCLE <span class="dim">·</span> <kbd>C</kbd> CHROMA <span class="dim">·</span> <kbd>F</kbd> FOCUS <span class="dim">·</span> <kbd>R</kbd> RND</div>
   </div>
+  <button class="btn" id="focusBtn">◈ FOCUS</button>
 
   <!-- SIGNAL panel -->
   <div class="panel" id="p-audio" style="left: 24px; top: 112px;">
     <i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i>
-    <div class="head"><span><span class="dot idle"></span>SIGNAL</span><span class="grip">:::</span></div>
+    <div class="head"><span><span class="dot idle"></span>SIGNAL</span><span class="grip">::: <button class="fold" aria-label="collapse panel">—</button></span></div>
     <div class="body">
       <div class="transport">
         <div id="play" role="button" aria-label="play/pause" tabindex="0"><span class="ico"></span></div>
@@ -312,6 +358,12 @@
         <input type="range" id="volume" min="0" max="1" step="0.01" value="0.8" />
         <span class="val" id="volumeVal">80%</span>
       </div>
+      <div class="slider">
+        <span class="lab">ECHO</span>
+        <input type="range" id="echo" min="0" max="0.9" step="0.01" value="0" />
+        <span class="val" id="echoVal">0%</span>
+      </div>
+      <div class="vu" id="vu"></div>
       <input type="file" id="fileInput" accept="audio/*" hidden />
     </div>
   </div>
@@ -319,20 +371,27 @@
   <!-- PARAMETERS panel -->
   <div class="panel" id="p-params" style="right: 24px; top: 112px;">
     <i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i>
-    <div class="head"><span><span class="dot idle"></span>PARAMETERS</span><span class="grip">:::</span></div>
+    <div class="head"><span><span class="dot idle"></span>PARAMETERS</span><span class="grip">::: <button class="fold" aria-label="collapse panel">—</button></span></div>
     <div class="body">
       <div class="slider"><span class="lab">ROTATION</span><input type="range" id="rotation"   min="0" max="2"   step="0.01" value="0.45"><span class="val" id="rotationVal">0.45</span></div>
       <div class="slider"><span class="lab">RESOLUTION</span><input type="range" id="resolution" min="0" max="1"  step="0.01" value="0.55"><span class="val" id="resolutionVal">—</span></div>
-      <div class="slider"><span class="lab">DISTORTION</span><input type="range" id="distortion" min="0" max="2"  step="0.01" value="0.75"><span class="val" id="distortionVal">0.75</span></div>
-      <div class="slider"><span class="lab">REACTIVITY</span><input type="range" id="reactivity" min="0" max="2"  step="0.01" value="1.00"><span class="val" id="reactivityVal">1.00</span></div>
+      <div class="slider"><span class="lab">DISTORTION</span><input type="range" id="distortion" min="0" max="3"  step="0.01" value="1.30"><span class="val" id="distortionVal">1.30</span></div>
+      <div class="slider"><span class="lab">FRACTURE</span><input type="range" id="fracture"   min="0" max="1"   step="0.01" value="0.45"><span class="val" id="fractureVal">0.45</span></div>
+      <div class="slider"><span class="lab">REACTIVITY</span><input type="range" id="reactivity" min="0" max="3"  step="0.01" value="1.35"><span class="val" id="reactivityVal">1.35</span></div>
       <div class="slider"><span class="lab">SENSITIVITY</span><input type="range" id="sensitivity" min="0.4" max="2.4" step="0.01" value="1.20"><span class="val" id="sensitivityVal">1.20</span></div>
+      <div class="row" style="margin-top: 12px;">
+        <span class="lab">CHROMA</span>
+        <span><button class="btn" id="chromaCycle" style="padding: 4px 10px;">CYCLE</button>
+        <span class="val" id="chromaName" style="margin-left: 6px;">EMBER</span></span>
+      </div>
+      <div class="swatches" id="swatchGrid"></div>
     </div>
   </div>
 
   <!-- MORPHOLOGY panel (extension: different shapes) -->
   <div class="panel" id="p-morph" style="right: 24px; bottom: 96px;">
     <i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i>
-    <div class="head"><span><span class="dot idle"></span>MORPHOLOGY</span><span class="grip">:::</span></div>
+    <div class="head"><span><span class="dot idle"></span>MORPHOLOGY</span><span class="grip">::: <button class="fold" aria-label="collapse panel">—</button></span></div>
     <div class="body">
       <div class="shapes" id="shapeGrid"></div>
       <div class="row" style="margin-top: 11px;">
@@ -344,16 +403,24 @@
   <!-- TELEMETRY panel -->
   <div class="panel" id="p-tele" style="left: 24px; bottom: 96px; width: 268px;">
     <i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i>
-    <div class="head"><span><span class="dot idle"></span>TELEMETRY</span><span class="grip">:::</span></div>
+    <div class="head"><span><span class="dot idle"></span>TELEMETRY</span><span class="grip">::: <button class="fold" aria-label="collapse panel">—</button></span></div>
     <div class="body">
       <div class="scopes">
         <canvas id="spectrum"></canvas>
         <canvas id="scope"></canvas>
       </div>
+      <div class="bands">
+        <div class="bandrow"><span class="lab">BASS</span><div class="bar"><i id="barBass"></i></div></div>
+        <div class="bandrow"><span class="lab">MID</span><div class="bar"><i id="barMid"></i></div></div>
+        <div class="bandrow"><span class="lab">TREB</span><div class="bar"><i id="barTreble"></i></div></div>
+      </div>
       <div class="meters">
         <div class="cell"><span class="lab">LEVEL</span><span class="val" id="mLevel">0%</span></div>
         <div class="cell"><span class="lab">PEAK</span><span class="val" id="mPeak">-∞ dB</span></div>
         <div class="cell"><span class="lab">PULSE</span><span class="val" id="mBpm">--- BPM</span></div>
+        <div class="cell"><span class="lab">BEATS</span><span class="val" id="mBeats">0</span></div>
+        <div class="cell"><span class="lab">FPS</span><span class="val" id="mFps">--</span></div>
+        <div class="cell"><span class="lab">FORM</span><span class="val" id="mForm">ICO</span></div>
       </div>
     </div>
   </div>

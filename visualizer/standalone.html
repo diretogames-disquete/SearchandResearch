@@ -200,6 +200,7 @@
   }
 
   .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .tnav { padding: 3px 9px; line-height: 1; }
 
   /* transport */
   .transport { display: grid; grid-template-columns: 46px 1fr; gap: 12px; align-items: center; margin-bottom: 12px; }
@@ -333,7 +334,7 @@
   </div>
   <div class="corner br">
     <div class="dim">DRAG PANELS — GRAB &amp; FLING THE ANOMALY</div>
-    <div class="opt"><kbd>SPACE</kbd> PLAY <span class="dim">·</span> <kbd>1–9</kbd><kbd>0</kbd> FORM <span class="dim">·</span> <kbd>←→</kbd> CYCLE <span class="dim">·</span> <kbd>C</kbd> CHROMA <span class="dim">·</span> <kbd>F</kbd> FOCUS <span class="dim">·</span> <kbd>R</kbd> RND</div>
+    <div class="opt"><kbd>SPACE</kbd> PLAY <span class="dim">·</span> <kbd>T</kbd> TRACK <span class="dim">·</span> <kbd>1–9</kbd><kbd>0</kbd> FORM <span class="dim">·</span> <kbd>←→</kbd> CYCLE <span class="dim">·</span> <kbd>C</kbd> CHROMA <span class="dim">·</span> <kbd>F</kbd> FOCUS <span class="dim">·</span> <kbd>R</kbd> RND</div>
   </div>
   <button class="btn" id="focusBtn">◈ FOCUS</button>
 
@@ -345,23 +346,34 @@
       <div class="transport">
         <div id="play" role="button" aria-label="play/pause" tabindex="0"><span class="ico"></span></div>
         <div class="tmeta">
-          <div class="track" id="trackName">DEMO SIGNAL 116</div>
+          <div class="track" id="trackName">TECHNO PULSE — 126</div>
           <div class="time"><b id="timeCur">00:00</b> / <span id="timeState">STANDBY</span></div>
         </div>
       </div>
-      <div class="seg" style="margin-bottom: 12px;">
+      <div class="seg" style="margin-bottom: 10px;">
         <button class="btn on" id="srcDemo">DEMO</button>
         <button class="btn" id="srcFile">FILE</button>
         <button class="btn" id="srcMic">MIC</button>
       </div>
+      <div class="row" style="margin-bottom: 10px;">
+        <button class="btn tnav" id="trackPrev">◂</button>
+        <span class="val" id="trackStyle" style="flex: 1; text-align: center; min-width: 0;">TECHNO PULSE</span>
+        <button class="btn tnav" id="trackNext">▸</button>
+      </div>
+      <div class="row" id="heartRow" style="display: none; margin-bottom: 10px;">
+        <span class="lab">HEART RATE</span>
+        <span><button class="btn tnav" id="hrDown">−</button>
+        <span class="val" id="hrVal" style="margin: 0 5px;">72</span>
+        <button class="btn tnav" id="hrUp">+</button></span>
+      </div>
       <div class="slider">
         <span class="lab">VOLUME</span>
-        <input type="range" id="volume" min="0" max="1" step="0.01" value="0.8" />
+        <input type="range" id="volume" min="0" max="1.5" step="0.01" value="0.8" />
         <span class="val" id="volumeVal">80%</span>
       </div>
       <div class="slider">
         <span class="lab">ECHO</span>
-        <input type="range" id="echo" min="0" max="0.9" step="0.01" value="0" />
+        <input type="range" id="echo" min="0" max="1.2" step="0.01" value="0" />
         <span class="val" id="echoVal">0%</span>
       </div>
       <div class="vu" id="vu"></div>
@@ -374,12 +386,12 @@
     <i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i>
     <div class="head"><span><span class="dot idle"></span>PARAMETERS</span><span class="grip">::: <button class="fold" aria-label="collapse panel">—</button></span></div>
     <div class="body">
-      <div class="slider"><span class="lab">ROTATION</span><input type="range" id="rotation"   min="0" max="2"   step="0.01" value="0.45"><span class="val" id="rotationVal">0.45</span></div>
+      <div class="slider"><span class="lab">ROTATION</span><input type="range" id="rotation"   min="0" max="5"   step="0.01" value="0.45"><span class="val" id="rotationVal">0.45</span></div>
       <div class="slider"><span class="lab">RESOLUTION</span><input type="range" id="resolution" min="0" max="1"  step="0.01" value="0.55"><span class="val" id="resolutionVal">—</span></div>
-      <div class="slider"><span class="lab">DISTORTION</span><input type="range" id="distortion" min="0" max="3"  step="0.01" value="1.30"><span class="val" id="distortionVal">1.30</span></div>
-      <div class="slider"><span class="lab">FRACTURE</span><input type="range" id="fracture"   min="0" max="1"   step="0.01" value="0.45"><span class="val" id="fractureVal">0.45</span></div>
-      <div class="slider"><span class="lab">REACTIVITY</span><input type="range" id="reactivity" min="0" max="3"  step="0.01" value="1.35"><span class="val" id="reactivityVal">1.35</span></div>
-      <div class="slider"><span class="lab">SENSITIVITY</span><input type="range" id="sensitivity" min="0.4" max="2.4" step="0.01" value="1.20"><span class="val" id="sensitivityVal">1.20</span></div>
+      <div class="slider"><span class="lab">DISTORTION</span><input type="range" id="distortion" min="0" max="6"  step="0.01" value="1.30"><span class="val" id="distortionVal">1.30</span></div>
+      <div class="slider"><span class="lab">FRACTURE</span><input type="range" id="fracture"   min="0" max="2"   step="0.01" value="0.45"><span class="val" id="fractureVal">0.45</span></div>
+      <div class="slider"><span class="lab">REACTIVITY</span><input type="range" id="reactivity" min="0" max="6"  step="0.01" value="1.35"><span class="val" id="reactivityVal">1.35</span></div>
+      <div class="slider"><span class="lab">SENSITIVITY</span><input type="range" id="sensitivity" min="0.1" max="5" step="0.01" value="1.20"><span class="val" id="sensitivityVal">1.20</span></div>
       <div class="row" style="margin-top: 12px;">
         <span class="lab">CHROMA</span>
         <span><button class="btn" id="chromaCycle" style="padding: 4px 10px;">CYCLE</button>
@@ -599,11 +611,11 @@
     '  float fn=snoise(cd*(uNoiseScale*0.9)+vec3(t*0.55,-t*0.4,t*0.3));',
     '  float fq=floor(fn*4.0+0.5)*0.25;',
     '  float shard=(0.6*fq+0.4*fn)*(0.45+audio*1.7)+uPulse*(0.32*aSeed1+0.08);',
-    '  float disp=uDistort*(smoothD*(1.0-0.55*uFracture)+0.40*shard*uFracture)',
+    '  float disp=uDistort*(smoothD*max(0.0,1.0-0.55*uFracture)+0.40*shard*uFracture)',
     '            +uPulse*0.17*n',
     '            +uTreble*uReact*0.05*n2;',
     // shards burst outward from the centre, smooth swell follows the normal
-    '  vec3 dir=normalize(mix(nrm,cd,uFracture*0.75));',
+    '  vec3 dir=normalize(mix(nrm,cd,clamp(uFracture*0.75,0.0,1.0)));',
     '  vec3 p=position+dir*disp;',
     '  p*=1.0+uBass*uReact*0.07+uPulse*0.05;',
     '  vDisp=disp;',
@@ -795,29 +807,29 @@
     }
     shp.closePath();
     var g = new THREE.ExtrudeGeometry(shp, {
-      depth: 0.5, steps: di(d, 1, 3),
-      bevelEnabled: true, bevelThickness: 0.12, bevelSize: 0.1, bevelSegments: di(d, 1, 4)
+      depth: 0.5, steps: di(d, 1, 6),
+      bevelEnabled: true, bevelThickness: 0.12, bevelSize: 0.1, bevelSegments: di(d, 1, 8)
     });
     g.center();
     return g;
   }
 
   var SHAPES = [
-    { id: 'ICO', name: 'ICOSAHEDRON',  glyph: 'M8 1 L15 6 L12 15 L4 15 L1 6 Z M8 1 L8 15',           make: function (d) { return new THREE.IcosahedronGeometry(1.18, di(d, 1, 5)); } },
-    { id: 'SPH', name: 'SPHERE',       glyph: 'M8 1 A7 7 0 1 0 8 15 A7 7 0 1 0 8 1 M1.5 8 H14.5',     make: function (d) { return new THREE.SphereGeometry(1.18, di(d, 10, 46), di(d, 8, 32)); } },
-    { id: 'TOR', name: 'TORUS',        glyph: 'M8 3 A6 5 0 1 0 8 13 A6 5 0 1 0 8 3 M8 6.5 A2 1.6 0 1 0 8 9.5 A2 1.6 0 1 0 8 6.5', make: function (d) { return new THREE.TorusGeometry(0.92, 0.40, di(d, 8, 28), di(d, 14, 72)); } },
-    { id: 'KNT', name: 'TORUS KNOT',   glyph: 'M3 11 C1 6 6 1 9 4 C12 7 4 9 7 12 C10 15 15 10 13 5',  make: function (d) { return new THREE.TorusKnotGeometry(0.78, 0.30, di(d, 48, 220), di(d, 6, 22)); } },
-    { id: 'OCT', name: 'OCTAHEDRON',   glyph: 'M8 1 L15 8 L8 15 L1 8 Z M1 8 H15 M8 1 V15',            make: function (d) { return new THREE.OctahedronGeometry(1.30, di(d, 0, 3)); } },
-    { id: 'DOD', name: 'DODECAHEDRON', glyph: 'M8 1 L14 5 L12 12 L4 12 L2 5 Z M8 1 L8 5 M2 5 L5 8 M14 5 L11 8 M4 12 L5 8 L8 5 L11 8 L12 12', make: function (d) { return new THREE.DodecahedronGeometry(1.26, di(d, 0, 3)); } },
-    { id: 'BOX', name: 'PRISM CUBE',   glyph: 'M3 5 L8 2 L13 5 L13 11 L8 14 L3 11 Z M3 5 L8 8 L13 5 M8 8 V14', make: function (d) { return new THREE.BoxGeometry(1.58, 1.58, 1.58, di(d, 1, 10), di(d, 1, 10), di(d, 1, 10)); } },
-    { id: 'CAP', name: 'CAPSULE',      glyph: 'M5 4 A3 3 0 0 1 11 4 V12 A3 3 0 0 1 5 12 Z',           make: function (d) { return new THREE.CapsuleGeometry(0.62, 1.05, di(d, 2, 14), di(d, 8, 32)); } },
-    { id: 'TET', name: 'TETRAHEDRON',  glyph: 'M8 2 L14 13 L2 13 Z M8 2 L8 13',                       make: function (d) { return new THREE.TetrahedronGeometry(1.45, di(d, 0, 3)); } },
-    { id: 'PYR', name: 'PYRAMID',      glyph: 'M8 2 L14 12 L2 12 Z M2 12 L8 9.5 L14 12 M8 2 L8 9.5',  make: function (d) { return new THREE.ConeGeometry(1.18, 1.7, 4, di(d, 1, 12)); } },
-    { id: 'CON', name: 'CONE',         glyph: 'M8 2 L12.5 11.5 A4.5 1.6 0 1 1 3.5 11.5 Z',            make: function (d) { return new THREE.ConeGeometry(1.0, 1.85, di(d, 8, 42), di(d, 1, 12)); } },
-    { id: 'CYL', name: 'CYLINDER',     glyph: 'M3.5 4.5 A4.5 1.7 0 1 0 12.5 4.5 A4.5 1.7 0 1 0 3.5 4.5 M3.5 4.5 V11.5 A4.5 1.7 0 0 0 12.5 11.5 V4.5', make: function (d) { return new THREE.CylinderGeometry(0.85, 0.85, 1.7, di(d, 8, 42), di(d, 1, 12)); } },
-    { id: 'GEM', name: 'GEMSTONE',     glyph: 'M8 1 L13 6 L8 15 L3 6 Z M3 6 H13 M8 1 L8 15',          make: function (d) { var g = new THREE.OctahedronGeometry(1.06, di(d, 0, 3)); g.scale(0.92, 1.5, 0.92); return g; } },
-    { id: 'RNG', name: 'HALO RING',    glyph: 'M8 2.5 A5.5 5.5 0 1 0 8 13.5 A5.5 5.5 0 1 0 8 2.5 M8 5.5 A2.5 2.5 0 1 0 8 10.5 A2.5 2.5 0 1 0 8 5.5', make: function (d) { return new THREE.TorusGeometry(1.18, 0.22, di(d, 6, 20), di(d, 18, 90)); } },
-    { id: 'HLX', name: 'HELIX COIL',   glyph: 'M2 4.5 Q5 1.5 8 4.5 T14 4.5 M2 8 Q5 5 8 8 T14 8 M2 11.5 Q5 8.5 8 11.5 T14 11.5', make: function (d) { return new THREE.TubeGeometry(helixCurve, di(d, 36, 170), 0.26, di(d, 5, 14), false); } },
+    { id: 'ICO', name: 'ICOSAHEDRON',  glyph: 'M8 1 L15 6 L12 15 L4 15 L1 6 Z M8 1 L8 15',           make: function (d) { return new THREE.IcosahedronGeometry(1.18, di(d, 0, 24)); } },
+    { id: 'SPH', name: 'SPHERE',       glyph: 'M8 1 A7 7 0 1 0 8 15 A7 7 0 1 0 8 1 M1.5 8 H14.5',     make: function (d) { return new THREE.SphereGeometry(1.18, di(d, 6, 96), di(d, 4, 64)); } },
+    { id: 'TOR', name: 'TORUS',        glyph: 'M8 3 A6 5 0 1 0 8 13 A6 5 0 1 0 8 3 M8 6.5 A2 1.6 0 1 0 8 9.5 A2 1.6 0 1 0 8 6.5', make: function (d) { return new THREE.TorusGeometry(0.92, 0.40, di(d, 4, 48), di(d, 8, 160)); } },
+    { id: 'KNT', name: 'TORUS KNOT',   glyph: 'M3 11 C1 6 6 1 9 4 C12 7 4 9 7 12 C10 15 15 10 13 5',  make: function (d) { return new THREE.TorusKnotGeometry(0.78, 0.30, di(d, 32, 400), di(d, 4, 32)); } },
+    { id: 'OCT', name: 'OCTAHEDRON',   glyph: 'M8 1 L15 8 L8 15 L1 8 Z M1 8 H15 M8 1 V15',            make: function (d) { return new THREE.OctahedronGeometry(1.30, di(d, 0, 24)); } },
+    { id: 'DOD', name: 'DODECAHEDRON', glyph: 'M8 1 L14 5 L12 12 L4 12 L2 5 Z M8 1 L8 5 M2 5 L5 8 M14 5 L11 8 M4 12 L5 8 L8 5 L11 8 L12 12', make: function (d) { return new THREE.DodecahedronGeometry(1.26, di(d, 0, 12)); } },
+    { id: 'BOX', name: 'PRISM CUBE',   glyph: 'M3 5 L8 2 L13 5 L13 11 L8 14 L3 11 Z M3 5 L8 8 L13 5 M8 8 V14', make: function (d) { var s = di(d, 1, 24); return new THREE.BoxGeometry(1.58, 1.58, 1.58, s, s, s); } },
+    { id: 'CAP', name: 'CAPSULE',      glyph: 'M5 4 A3 3 0 0 1 11 4 V12 A3 3 0 0 1 5 12 Z',           make: function (d) { return new THREE.CapsuleGeometry(0.62, 1.05, di(d, 1, 32), di(d, 6, 64)); } },
+    { id: 'TET', name: 'TETRAHEDRON',  glyph: 'M8 2 L14 13 L2 13 Z M8 2 L8 13',                       make: function (d) { return new THREE.TetrahedronGeometry(1.45, di(d, 0, 28)); } },
+    { id: 'PYR', name: 'PYRAMID',      glyph: 'M8 2 L14 12 L2 12 Z M2 12 L8 9.5 L14 12 M8 2 L8 9.5',  make: function (d) { return new THREE.ConeGeometry(1.18, 1.7, 4, di(d, 1, 32)); } },
+    { id: 'CON', name: 'CONE',         glyph: 'M8 2 L12.5 11.5 A4.5 1.6 0 1 1 3.5 11.5 Z',            make: function (d) { return new THREE.ConeGeometry(1.0, 1.85, di(d, 4, 96), di(d, 1, 24)); } },
+    { id: 'CYL', name: 'CYLINDER',     glyph: 'M3.5 4.5 A4.5 1.7 0 1 0 12.5 4.5 A4.5 1.7 0 1 0 3.5 4.5 M3.5 4.5 V11.5 A4.5 1.7 0 0 0 12.5 11.5 V4.5', make: function (d) { return new THREE.CylinderGeometry(0.85, 0.85, 1.7, di(d, 4, 96), di(d, 1, 24)); } },
+    { id: 'GEM', name: 'GEMSTONE',     glyph: 'M8 1 L13 6 L8 15 L3 6 Z M3 6 H13 M8 1 L8 15',          make: function (d) { var g = new THREE.OctahedronGeometry(1.06, di(d, 0, 20)); g.scale(0.92, 1.5, 0.92); return g; } },
+    { id: 'RNG', name: 'HALO RING',    glyph: 'M8 2.5 A5.5 5.5 0 1 0 8 13.5 A5.5 5.5 0 1 0 8 2.5 M8 5.5 A2.5 2.5 0 1 0 8 10.5 A2.5 2.5 0 1 0 8 5.5', make: function (d) { return new THREE.TorusGeometry(1.18, 0.22, di(d, 4, 32), di(d, 12, 200)); } },
+    { id: 'HLX', name: 'HELIX COIL',   glyph: 'M2 4.5 Q5 1.5 8 4.5 T14 4.5 M2 8 Q5 5 8 8 T14 8 M2 11.5 Q5 8.5 8 11.5 T14 11.5', make: function (d) { return new THREE.TubeGeometry(helixCurve, di(d, 24, 360), 0.26, di(d, 4, 24), false); } },
     { id: 'STR', name: 'STELLATED',    glyph: 'M8 1 L9.8 5.8 L15 6 L11 9.4 L12.4 14.6 L8 11.6 L3.6 14.6 L5 9.4 L1 6 L6.2 5.8 Z', make: starGeometry }
   ];
 
@@ -915,7 +927,7 @@
     mode: 'demo', playing: false,
     fileEl: null, fileNode: null, fileName: null,
     micStream: null, micNode: null,
-    demo: { timer: null, step: 0, nextT: 0, noise: null, pad: [], delay: null, startAt: 0, elapsed: 0 },
+    demo: { timer: null, step: 0, nextT: 0, noise: null, pad: [], delay: null, startAt: 0, elapsed: 0, trackIdx: 0, heartRate: 72 },
     bands: { bass: 0, mid: 0, treble: 0, level: 0, rawBass: 0 },
     sensitivity: 1.2
   };
@@ -977,9 +989,11 @@
     audio.demo.noise = buf;
   }
 
-  /* ----- procedural demo track (A-minor, 116 BPM) — keeps the page
-     fully self-contained/offline; original pen streamed an mp3 ----- */
-  var BPM = 116, SPB = 60 / BPM, STEP = SPB / 4;
+  /* ----- procedural demo tracks — several musical styles, all synthesized
+     so the page stays fully self-contained/offline (the original pen
+     streamed a single mp3) ----- */
+  function trk() { return TRACKS[audio.demo.trackIdx]; }
+  function stepDur() { return 60 / trk().bpm / 4; }
 
   function dKick(t) {
     var c = audio.ctx, o = c.createOscillator(), g = c.createGain();
@@ -1023,14 +1037,98 @@
       o.start(t); o.stop(t + 0.4);
     }
   }
-  function dPadStart() {
+  function dSnare(t, gain) {
+    dNoise(t, 0.18, 'bandpass', 1750, gain || 0.5);
+    var c = audio.ctx, o = c.createOscillator(), g = c.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(196, t);
+    o.frequency.exponentialRampToValueAtTime(120, t + 0.08);
+    g.gain.setValueAtTime(0.22, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+    o.connect(g); g.connect(audio.bus);
+    o.start(t); o.stop(t + 0.12);
+  }
+  function dSub(t, f, dur, gain) {
+    var c = audio.ctx, o = c.createOscillator(), g = c.createGain();
+    o.type = 'sine'; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g); g.connect(audio.bus);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+  function dPluck(t, f, dur, cutoff, gain, type) {
+    var c = audio.ctx, o = c.createOscillator(), lp = c.createBiquadFilter(), g = c.createGain();
+    o.type = type || 'sawtooth'; o.frequency.value = f;
+    lp.type = 'lowpass'; lp.Q.value = 2;
+    lp.frequency.setValueAtTime(cutoff, t);
+    lp.frequency.exponentialRampToValueAtTime(Math.max(180, cutoff * 0.25), t + dur);
+    g.gain.setValueAtTime(gain, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(lp); lp.connect(g); g.connect(audio.bus);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+  function dBell(t, f, gain) {
+    var c = audio.ctx;
+    [f, f * 2.756].forEach(function (fr, i) {
+      var o = c.createOscillator(), g = c.createGain();
+      o.type = 'sine'; o.frequency.value = fr;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(gain * (i ? 0.4 : 1), t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 1.1);
+      o.connect(g); g.connect(audio.bus); g.connect(audio.demo.delay);
+      o.start(t); o.stop(t + 1.2);
+    });
+  }
+  function dEPiano(t, fs, gain) {
+    var c = audio.ctx;
+    fs.forEach(function (f) {
+      var o = c.createOscillator(), o2 = c.createOscillator(), g = c.createGain(), g2 = c.createGain();
+      o.type = 'triangle'; o.frequency.value = f;
+      o2.type = 'sine'; o2.frequency.value = f * 2;
+      g2.gain.value = 0.25;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(gain, t + 0.025);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.9);
+      o.connect(g); o2.connect(g2); g2.connect(g); g.connect(audio.bus); g.connect(audio.demo.delay);
+      o.start(t); o2.start(t); o.stop(t + 1); o2.stop(t + 1);
+    });
+  }
+  function dRide(t, open) {
+    dNoise(t, open ? 0.3 : 0.09, 'highpass', 8200, open ? 0.16 : 0.11);
+  }
+  function dTom(t, f) {
+    var c = audio.ctx, o = c.createOscillator(), g = c.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(f, t);
+    o.frequency.exponentialRampToValueAtTime(f * 0.55, t + 0.22);
+    g.gain.setValueAtTime(0.5, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + 0.26);
+    o.connect(g); g.connect(audio.bus);
+    o.start(t); o.stop(t + 0.3);
+  }
+  function dHeart(t, f0, f1, gain, dur) {
+    var c = audio.ctx, o = c.createOscillator(), lp = c.createBiquadFilter(), g = c.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(f0, t);
+    o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    lp.type = 'lowpass'; lp.frequency.value = 240;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(gain, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(lp); lp.connect(g); g.connect(audio.bus);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+
+  // sustain layers (cleared by dPadStop on every transport stop)
+  function padStart(notes, cutoff, gain, lfoRate, lfoDepth) {
     var c = audio.ctx, lp = c.createBiquadFilter(), g = c.createGain();
-    lp.type = 'lowpass'; lp.frequency.value = 460;
-    g.gain.value = 0.045;
+    lp.type = 'lowpass'; lp.frequency.value = cutoff;
+    g.gain.value = gain;
     var lfo = c.createOscillator(), lg = c.createGain();
-    lfo.frequency.value = 0.07; lg.gain.value = 240;
+    lfo.frequency.value = lfoRate; lg.gain.value = lfoDepth;
     lfo.connect(lg); lg.connect(lp.frequency); lfo.start();
-    [110, 110.6, 164.81].forEach(function (fr) {
+    notes.forEach(function (fr) {
       var o = c.createOscillator(); o.type = 'triangle'; o.frequency.value = fr;
       o.connect(lp); o.start();
       audio.demo.pad.push(o);
@@ -1038,42 +1136,178 @@
     lp.connect(g); g.connect(audio.bus);
     audio.demo.pad.push(lfo);
   }
+  function noiseBedStart(cutoff, gain) {
+    var c = audio.ctx, s = c.createBufferSource(), lp = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = audio.demo.noise; s.loop = true;
+    lp.type = 'lowpass'; lp.frequency.value = cutoff;
+    g.gain.value = gain;
+    s.connect(lp); lp.connect(g); g.connect(audio.bus);
+    s.start();
+    audio.demo.pad.push(s);
+  }
   function dPadStop() {
     audio.demo.pad.forEach(function (o) { try { o.stop(); } catch (e) { /* already stopped */ } });
     audio.demo.pad = [];
   }
 
-  var BASS_PAT = { 0: [55, 2], 3: [55, 1], 6: [65.41, 2], 8: [55, 2], 11: [49, 2], 14: [82.41, 1] };
+  /* track library — 16 steps/bar, 4-bar patterns, swing on odd 16ths */
+  var TRACKS = [
+    {
+      name: 'TECHNO PULSE', bpm: 126, swing: 0,
+      bassPat: { 0: [55, 2], 3: [55, 1], 6: [65.41, 2], 8: [55, 2], 11: [49, 2], 14: [82.41, 1] },
+      onStart: function () { padStart([110, 110.6, 164.81], 460, 0.045, 0.07, 240); },
+      step: function (s, bar, t) {
+        if (s % 4 === 0) dKick(t);
+        if (bar === 3 && s === 14) dKick(t);
+        if (s === 4 || s === 12) dNoise(t, 0.16, 'bandpass', 1900, 0.5);
+        if (s % 2 === 0 && s !== 10) dNoise(t, 0.045, 'highpass', 7200, 0.22);
+        if (s === 10) dNoise(t, 0.22, 'highpass', 6200, 0.27);
+        var b = this.bassPat[s];
+        if (b) dBass(t, b[0] * (bar === 2 ? 1.5 : 1), b[1] * stepDur() * 0.92);
+        if (s === 0) dStab(t, bar % 2 ? [174.61, 220, 261.63, 329.63] : [220, 261.63, 329.63, 392]);
+      }
+    },
+    {
+      name: 'SYNTHWAVE RUN', bpm: 100, swing: 0,
+      arps: [
+        [220, 261.63, 329.63, 440],      // Am
+        [174.61, 220, 261.63, 349.23],   // F
+        [261.63, 329.63, 392, 523.25],   // C
+        [196, 246.94, 293.66, 392]       // G
+      ],
+      roots: [110, 87.31, 65.41, 98],
+      onStart: function () { padStart([110, 110.5, 220], 700, 0.035, 0.05, 300); },
+      step: function (s, bar, t) {
+        if (s % 4 === 0) dKick(t);
+        if (s === 4 || s === 12) { dSnare(t, 0.55); dNoise(t, 0.3, 'bandpass', 1500, 0.25); }
+        if (s % 2 === 0) dNoise(t, 0.04, 'highpass', 8000, 0.16);
+        if (s % 2 === 0) dPluck(t, this.arps[bar % 4][(s / 2) % 4], 0.17, 2200, 0.16, 'sawtooth');
+        if (s === 0) dSub(t, this.roots[bar % 4], 0.5, 0.5);
+        if (s % 4 === 2) dSub(t, this.roots[bar % 4], 0.22, 0.4);
+        if (bar % 2 === 1 && s === 14) dBell(t, 880, 0.12);
+      }
+    },
+    {
+      name: 'BREAKBEAT FLUX', bpm: 172, swing: 0,
+      step: function (s, bar, t) {
+        if (s === 0 || s === 10) dKick(t);
+        if (bar % 2 === 1 && s === 6) dKick(t);
+        if (s === 4 || s === 12) dSnare(t, 0.6);
+        if (s % 2 === 1) dNoise(t, 0.035, 'highpass', 7800, 0.14);
+        if (s % 4 === 2) dNoise(t, 0.05, 'highpass', 6800, 0.2);
+        if (bar % 2 === 0) {
+          var bp = { 0: [55, 4], 8: [43.65, 3], 12: [65.41, 2] }[s];
+          if (bp) dBass(t, bp[0], bp[1] * stepDur() * 0.95);
+        } else if (s === 0) {
+          dBass(t, 49, 6 * stepDur());
+        }
+        if (bar === 3 && s === 14) dTom(t, 196);
+      }
+    },
+    {
+      name: 'LOFI BOOM BAP', bpm: 88, swing: 0.56,
+      onStart: function () {
+        noiseBedStart(2800, 0.014);
+        padStart([110, 164.81], 500, 0.025, 0.04, 150);
+      },
+      step: function (s, bar, t) {
+        if (s === 0 || s === 7 || (bar % 2 === 1 && s === 10)) dKick(t);
+        if (s === 4 || s === 12) dSnare(t, 0.42);
+        if (s % 2 === 0) dNoise(t, 0.035, 'highpass', 7000, 0.13);
+        if (s === 14 && bar % 4 === 3) dNoise(t, 0.18, 'highpass', 6400, 0.16);
+        if (s === 0) dEPiano(t, bar % 2 ? [174.61, 220, 261.63, 329.63] : [164.81, 196, 246.94, 293.66], 0.14);
+        if (s === 0 || s === 8) dSub(t, bar % 2 ? 87.31 : 82.41, 0.55, 0.45);
+      }
+    },
+    {
+      name: 'JAZZ NOIR', bpm: 120, swing: 0.62,
+      walk: [110, 123.47, 130.81, 146.83, 164.81, 146.83, 130.81, 123.47,
+             110, 98, 87.31, 98, 110, 130.81, 146.83, 164.81],
+      step: function (s, bar, t) {
+        if (s % 4 === 0) dRide(t, false);
+        if (s % 8 === 6) dRide(t, true);
+        if (s % 4 === 0) dSub(t, this.walk[(bar * 4 + s / 4) % 16], 0.42, 0.42);
+        if (s === 4 || s === 12) dNoise(t, 0.12, 'bandpass', 1400, 0.12);
+        if ((bar % 2 === 0 && s === 2) || (bar % 4 === 2 && s === 10)) {
+          dEPiano(t, [164.81, 196, 246.94, 293.66], 0.1);
+        }
+      }
+    },
+    {
+      name: 'AMBIENT DRIFT', bpm: 64, swing: 0,
+      bells: [[2, 659.26], [9, 440], [13, 523.25], [6, 587.33]],
+      onStart: function () { padStart([110, 164.81, 246.94, 261.63], 520, 0.05, 0.05, 260); },
+      step: function (s, bar, t) {
+        if (s === 0) dSub(t, bar % 2 ? 43.65 : 55, 8 * stepDur(), 0.4);
+        var bl = this.bells[bar % 4];
+        if (s === bl[0]) dBell(t, bl[1] * (bar % 2 ? 1 : 0.5), 0.1);
+        if (s === 8 && bar % 2 === 1) dNoise(t, 0.5, 'highpass', 9000, 0.045);
+      }
+    },
+    { name: 'CARDIAC LUB-DUB', bpm: 72, heart: true }
+  ];
 
-  function scheduleStep(step, t) {
-    var s = step % 16, bar = (step >> 4) % 4;
-    if (s === 0 || s === 4 || s === 8 || s === 12) dKick(t);
-    if (bar === 3 && s === 14) dKick(t);
-    if (s === 4 || s === 12) dNoise(t, 0.16, 'bandpass', 1900, 0.5);
-    if (s % 2 === 0 && s !== 10) dNoise(t, 0.045, 'highpass', 7200, 0.22);
-    if (s === 10) dNoise(t, 0.22, 'highpass', 6200, 0.27);
-    var b = BASS_PAT[s];
-    if (b) dBass(t, b[0] * (bar === 2 ? 1.5 : 1), b[1] * STEP * 0.92);
-    if (s === 0) dStab(t, bar % 2 ? [174.61, 220, 261.63, 329.63] : [220, 261.63, 329.63, 392]);
+  function scheduleHeart(t) {
+    var hr = audio.demo.heartRate;
+    var gap = clamp((60 / hr) * 0.36, 0.14, 0.34);
+    dHeart(t, 58, 36, 0.95, 0.17);        // LUB (S1)
+    dHeart(t + gap, 74, 46, 0.55, 0.12);  // DUB (S2)
   }
+
   function demoTick() {
     if (!audio.ctx || audio.ctx.state !== 'running') return;
+    var tr = trk();
     while (audio.demo.nextT < audio.ctx.currentTime + 0.14) {
-      scheduleStep(audio.demo.step, audio.demo.nextT);
-      audio.demo.step++;
-      audio.demo.nextT += STEP;
+      if (tr.heart) {
+        scheduleHeart(audio.demo.nextT);
+        audio.demo.nextT += 60 / audio.demo.heartRate;
+      } else {
+        var s = audio.demo.step % 16, bar = (audio.demo.step >> 4) % 4;
+        var swung = audio.demo.nextT + ((s % 2 === 1) ? (tr.swing || 0) * stepDur() * 0.6 : 0);
+        tr.step(s, bar, swung);
+        audio.demo.step++;
+        audio.demo.nextT += stepDur();
+      }
     }
   }
   function demoStart() {
     audio.demo.step = 0;
     audio.demo.nextT = audio.ctx.currentTime + 0.06;
     audio.demo.startAt = audio.ctx.currentTime - audio.demo.elapsed;
-    dPadStart();
+    if (trk().onStart) trk().onStart();
     audio.demo.timer = setInterval(demoTick, 25);
   }
   function demoStop() {
     clearInterval(audio.demo.timer); audio.demo.timer = null;
     dPadStop();
+  }
+
+  function updateTrackUi() {
+    var tr = trk();
+    $('#trackStyle').textContent = tr.name;
+    $('#heartRow').style.display = (tr.heart && audio.mode === 'demo') ? 'flex' : 'none';
+    $('#hrVal').textContent = audio.demo.heartRate;
+    if (audio.mode === 'demo') {
+      $('#trackName').textContent = tr.name + ' — ' + (tr.heart ? audio.demo.heartRate : tr.bpm);
+    }
+  }
+  function setTrack(idx) {
+    idx = (idx + TRACKS.length) % TRACKS.length;
+    var resume = audio.playing;
+    if (audio.playing) pause();
+    audio.demo.trackIdx = idx;
+    audio.demo.elapsed = 0;
+    if (audio.mode !== 'demo') switchSource('demo'); else updateTrackUi();
+    setStatus('TRACK LOADED: ' + trk().name, resume ? 'RESUMING TRANSPORT' : 'PRESS PLAY TO ENGAGE');
+    window.__VIZ.track = trk().name;
+    if (resume) play();
+  }
+  function setHeartRate(d) {
+    audio.demo.heartRate = clamp(audio.demo.heartRate + d, 40, 200);
+    updateTrackUi();
+    if (trk().heart) {
+      setStatus('CARDIAC RATE ' + audio.demo.heartRate + ' BPM', d > 0 ? 'ELEVATING PULSE' : 'CALMING PULSE');
+    }
   }
 
   /* ----- transport / sources ----- */
@@ -1124,9 +1358,11 @@
     }
   }
   function sourceLabel() {
-    return audio.mode === 'demo' ? 'INTERNAL SYNTH 116 BPM'
-         : audio.mode === 'file' ? (audio.fileName || 'LOCAL FILE')
-         : 'LIVE MICROPHONE FEED';
+    if (audio.mode === 'demo') {
+      var tr = trk();
+      return tr.heart ? 'CARDIAC ' + audio.demo.heartRate + ' BPM' : tr.name + ' — ' + tr.bpm + ' BPM';
+    }
+    return audio.mode === 'file' ? (audio.fileName || 'LOCAL FILE') : 'LIVE MICROPHONE FEED';
   }
 
   function switchSource(mode) {
@@ -1136,10 +1372,9 @@
     ['srcDemo', 'srcFile', 'srcMic'].forEach(function (id) {
       $('#' + id).classList.toggle('on', id.toLowerCase() === 'src' + mode);
     });
-    $('#trackName').textContent =
-      mode === 'demo' ? 'DEMO SIGNAL 116' :
-      mode === 'file' ? (audio.fileName || 'NO FILE — CLICK FILE / DROP') :
-      'MICROPHONE';
+    if (mode === 'file') $('#trackName').textContent = audio.fileName || 'NO FILE — CLICK FILE / DROP';
+    else if (mode === 'mic') $('#trackName').textContent = 'MICROPHONE';
+    updateTrackUi();
     setStatus('SOURCE: ' + mode.toUpperCase(), 'PRESS PLAY TO ENGAGE');
   }
 
@@ -1478,7 +1713,7 @@
   }, null);
   bindSlider('echo', function (v) {
     if (audio.echoSend) audio.echoSend.gain.value = v;
-    $('#echoVal').textContent = Math.round((v / 0.9) * 100) + '%';
+    $('#echoVal').textContent = Math.round((v / 1.2) * 100) + '%';
   }, null);
 
   var resTimer = null;
@@ -1502,6 +1737,10 @@
   });
   $('#srcFile').addEventListener('dblclick', function () { $('#fileInput').click(); });
   $('#fileInput').addEventListener('change', function (e) { loadFile(e.target.files[0]); });
+  $('#trackPrev').addEventListener('click', function () { setTrack(audio.demo.trackIdx - 1); });
+  $('#trackNext').addEventListener('click', function () { setTrack(audio.demo.trackIdx + 1); });
+  $('#hrUp').addEventListener('click', function () { setHeartRate(6); });
+  $('#hrDown').addEventListener('click', function () { setHeartRate(-6); });
 
   // drag & drop audio
   var dropDepth = 0;
@@ -1595,6 +1834,7 @@
       setPalette(state.pal + 1, true);
     }
     else if (e.key === 'f' || e.key === 'F') setFocus(!state.focus);
+    else if (e.key === 't' || e.key === 'T') setTrack(audio.demo.trackIdx + 1);
     else if (e.key === 'r' || e.key === 'R') {
       var next = (state.shape + 1 + ((Math.random() * (SHAPES.length - 1)) | 0)) % SHAPES.length;
       setShape(next);

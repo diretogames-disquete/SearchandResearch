@@ -64,10 +64,11 @@ python3 -m http.server -d visualizer 8000   # → http://localhost:8000
 | Beat detection | Dedicated band-passed (≈58Hz) analyser → time-domain RMS spike vs rolling mean; median-based BPM readout; fires event-based GSAP tweens layered over per-frame shader animation (as in the original tutorial) |
 | Draggable panels with momentum | `Draggable.create` + `InertiaPlugin` (`inertia: true`, `edgeResistance`, viewport bounds, z-raise on grab) |
 | Grab & fling the orb | Ray-sphere hit test → pointer drag rotates the orb; on release a `gsap.to(..., { inertia })` throw continues rotation with tracked angular velocity (clamped pitch) |
-| Control sliders | The original’s set: **ROTATION**, **RESOLUTION** (live retessellation, vertex-count readout), **DISTORTION**, **REACTIVITY**, **SENSITIVITY** — plus VOLUME |
+| Control sliders | The original’s set — **ROTATION** (0–5), **RESOLUTION** (live retessellation from ~60 to ~37k vertices, vertex-count readout), **DISTORTION** (0–6), **REACTIVITY** (0–6), **SENSITIVITY** (0.1–5) — plus **FRACTURE** (0–2), VOLUME (0–150%) and ECHO |
 | Transport | Play/pause (button morphs ▶/⏸), elapsed time, track label, status line |
-| Audio sources | **DEMO** — procedural 116 BPM synth loop (kick/clap/hats/bass/stabs/pad, echo send), fully offline; **FILE** — picker or drag-&-drop, decoded locally; **MIC** — analysis-only routing (no feedback). The original streamed an mp3; the synth keeps this copy self-contained |
-| Keyboard | `SPACE` play/pause · `1–9`/`0` select shape · `←`/`→` cycle shapes · `C` next colour scheme · `F` focus mode · `R` random shape |
+| Audio sources | **DEMO** — seven built-in procedural tracks (below), fully offline; **FILE** — picker or drag-&-drop, decoded locally; **MIC** — analysis-only routing (no feedback). The original streamed an mp3; the synth engine keeps this copy self-contained |
+| Demo tracks | Pattern-sequencer synth engine (`◂`/`▸` in SIGNAL, or `T`): **TECHNO PULSE** 126 · **SYNTHWAVE RUN** 100 (arpeggios, gated snare) · **BREAKBEAT FLUX** 172 (DnB breaks, sub bass) · **LOFI BOOM BAP** 88 (swing, e-piano, vinyl bed) · **JAZZ NOIR** 120 (swung ride, walking bass) · **AMBIENT DRIFT** 64 (pads, bells, swells) · **CARDIAC LUB-DUB** — a synthesized two-tone heartbeat (S1 "lub" / S2 "dub") with `−`/`+` heart-rate controls, 40–200 BPM |
+| Keyboard | `SPACE` play/pause · `T` next track · `1–9`/`0` select shape · `←`/`→` cycle shapes · `C` next colour scheme · `F` focus mode · `R` random shape |
 | Misc | Status log rotation, LEVEL/PEAK dB/PULSE BPM meters, DPR-capped resize, WebGL failure overlay |
 
 ### Added in this version (beyond the original)

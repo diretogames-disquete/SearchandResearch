@@ -199,6 +199,7 @@
   }
 
   .seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .tnav { padding: 3px 9px; line-height: 1; }
 
   /* transport */
   .transport { display: grid; grid-template-columns: 46px 1fr; gap: 12px; align-items: center; margin-bottom: 12px; }
@@ -332,7 +333,7 @@
   </div>
   <div class="corner br">
     <div class="dim">DRAG PANELS — GRAB &amp; FLING THE ANOMALY</div>
-    <div class="opt"><kbd>SPACE</kbd> PLAY <span class="dim">·</span> <kbd>1–9</kbd><kbd>0</kbd> FORM <span class="dim">·</span> <kbd>←→</kbd> CYCLE <span class="dim">·</span> <kbd>C</kbd> CHROMA <span class="dim">·</span> <kbd>F</kbd> FOCUS <span class="dim">·</span> <kbd>R</kbd> RND</div>
+    <div class="opt"><kbd>SPACE</kbd> PLAY <span class="dim">·</span> <kbd>T</kbd> TRACK <span class="dim">·</span> <kbd>1–9</kbd><kbd>0</kbd> FORM <span class="dim">·</span> <kbd>←→</kbd> CYCLE <span class="dim">·</span> <kbd>C</kbd> CHROMA <span class="dim">·</span> <kbd>F</kbd> FOCUS <span class="dim">·</span> <kbd>R</kbd> RND</div>
   </div>
   <button class="btn" id="focusBtn">◈ FOCUS</button>
 
@@ -344,23 +345,34 @@
       <div class="transport">
         <div id="play" role="button" aria-label="play/pause" tabindex="0"><span class="ico"></span></div>
         <div class="tmeta">
-          <div class="track" id="trackName">DEMO SIGNAL 116</div>
+          <div class="track" id="trackName">TECHNO PULSE — 126</div>
           <div class="time"><b id="timeCur">00:00</b> / <span id="timeState">STANDBY</span></div>
         </div>
       </div>
-      <div class="seg" style="margin-bottom: 12px;">
+      <div class="seg" style="margin-bottom: 10px;">
         <button class="btn on" id="srcDemo">DEMO</button>
         <button class="btn" id="srcFile">FILE</button>
         <button class="btn" id="srcMic">MIC</button>
       </div>
+      <div class="row" style="margin-bottom: 10px;">
+        <button class="btn tnav" id="trackPrev">◂</button>
+        <span class="val" id="trackStyle" style="flex: 1; text-align: center; min-width: 0;">TECHNO PULSE</span>
+        <button class="btn tnav" id="trackNext">▸</button>
+      </div>
+      <div class="row" id="heartRow" style="display: none; margin-bottom: 10px;">
+        <span class="lab">HEART RATE</span>
+        <span><button class="btn tnav" id="hrDown">−</button>
+        <span class="val" id="hrVal" style="margin: 0 5px;">72</span>
+        <button class="btn tnav" id="hrUp">+</button></span>
+      </div>
       <div class="slider">
         <span class="lab">VOLUME</span>
-        <input type="range" id="volume" min="0" max="1" step="0.01" value="0.8" />
+        <input type="range" id="volume" min="0" max="1.5" step="0.01" value="0.8" />
         <span class="val" id="volumeVal">80%</span>
       </div>
       <div class="slider">
         <span class="lab">ECHO</span>
-        <input type="range" id="echo" min="0" max="0.9" step="0.01" value="0" />
+        <input type="range" id="echo" min="0" max="1.2" step="0.01" value="0" />
         <span class="val" id="echoVal">0%</span>
       </div>
       <div class="vu" id="vu"></div>
@@ -373,12 +385,12 @@
     <i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i>
     <div class="head"><span><span class="dot idle"></span>PARAMETERS</span><span class="grip">::: <button class="fold" aria-label="collapse panel">—</button></span></div>
     <div class="body">
-      <div class="slider"><span class="lab">ROTATION</span><input type="range" id="rotation"   min="0" max="2"   step="0.01" value="0.45"><span class="val" id="rotationVal">0.45</span></div>
+      <div class="slider"><span class="lab">ROTATION</span><input type="range" id="rotation"   min="0" max="5"   step="0.01" value="0.45"><span class="val" id="rotationVal">0.45</span></div>
       <div class="slider"><span class="lab">RESOLUTION</span><input type="range" id="resolution" min="0" max="1"  step="0.01" value="0.55"><span class="val" id="resolutionVal">—</span></div>
-      <div class="slider"><span class="lab">DISTORTION</span><input type="range" id="distortion" min="0" max="3"  step="0.01" value="1.30"><span class="val" id="distortionVal">1.30</span></div>
-      <div class="slider"><span class="lab">FRACTURE</span><input type="range" id="fracture"   min="0" max="1"   step="0.01" value="0.45"><span class="val" id="fractureVal">0.45</span></div>
-      <div class="slider"><span class="lab">REACTIVITY</span><input type="range" id="reactivity" min="0" max="3"  step="0.01" value="1.35"><span class="val" id="reactivityVal">1.35</span></div>
-      <div class="slider"><span class="lab">SENSITIVITY</span><input type="range" id="sensitivity" min="0.4" max="2.4" step="0.01" value="1.20"><span class="val" id="sensitivityVal">1.20</span></div>
+      <div class="slider"><span class="lab">DISTORTION</span><input type="range" id="distortion" min="0" max="6"  step="0.01" value="1.30"><span class="val" id="distortionVal">1.30</span></div>
+      <div class="slider"><span class="lab">FRACTURE</span><input type="range" id="fracture"   min="0" max="2"   step="0.01" value="0.45"><span class="val" id="fractureVal">0.45</span></div>
+      <div class="slider"><span class="lab">REACTIVITY</span><input type="range" id="reactivity" min="0" max="6"  step="0.01" value="1.35"><span class="val" id="reactivityVal">1.35</span></div>
+      <div class="slider"><span class="lab">SENSITIVITY</span><input type="range" id="sensitivity" min="0.1" max="5" step="0.01" value="1.20"><span class="val" id="sensitivityVal">1.20</span></div>
       <div class="row" style="margin-top: 12px;">
         <span class="lab">CHROMA</span>
         <span><button class="btn" id="chromaCycle" style="padding: 4px 10px;">CYCLE</button>

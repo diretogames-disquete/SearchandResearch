@@ -1290,33 +1290,82 @@
   setInterval(function () { if (state.chromaAuto) setPalette(state.pal + 1, true); }, 8000);
 
   // panel collapse + focus mode
+  // vertical fold (manual, per panel) and two-stage focus squash:
+  // body folds up first, then the header shrinks into a square chip
+  document.querySelectorAll('.panel').forEach(function (p) { p.__w = p.offsetWidth; });
+
+  function openBody(panel) {
+    var body = panel.querySelector('.body');
+    gsap.set(body, { clearProps: 'height,opacity,paddingTop,paddingBottom' });
+    var h = body.offsetHeight;
+    gsap.fromTo(body, { height: 0, opacity: 0, paddingTop: 0, paddingBottom: 0 },
+      { height: h, opacity: 1, paddingTop: 12, paddingBottom: 12, duration: 0.32, ease: 'power2.inOut',
+        onComplete: function () { gsap.set(body, { clearProps: 'height,opacity,paddingTop,paddingBottom' }); } });
+  }
+
   function setCollapsed(panel, yes) {
     if (panel.__closed === yes) return;
     panel.__closed = yes;
-    var body = panel.querySelector('.body');
     panel.querySelector('.fold').textContent = yes ? '+' : '—';
-    if (yes) {
-      gsap.to(body, { height: 0, opacity: 0, paddingTop: 0, paddingBottom: 0, duration: 0.32, ease: 'power2.inOut' });
-    } else {
-      gsap.set(body, { clearProps: 'height,opacity,paddingTop,paddingBottom' });
-      var h = body.offsetHeight;
-      gsap.fromTo(body, { height: 0, opacity: 0, paddingTop: 0, paddingBottom: 0 },
-        { height: h, opacity: 1, paddingTop: 12, paddingBottom: 12, duration: 0.32, ease: 'power2.inOut',
-          onComplete: function () { gsap.set(body, { clearProps: 'height,opacity,paddingTop,paddingBottom' }); } });
+    var body = panel.querySelector('.body');
+    if (yes) gsap.to(body, { height: 0, opacity: 0, paddingTop: 0, paddingBottom: 0, duration: 0.32, ease: 'power2.inOut' });
+    else openBody(panel);
+  }
+
+  function squashPanel(panel) {
+    if (panel.__anim) panel.__anim.kill();
+    var tl = gsap.timeline();
+    panel.__anim = tl;
+    if (!panel.__closed) {
+      panel.__closed = true;
+      panel.querySelector('.fold').textContent = '+';
+      var body = panel.querySelector('.body');
+      tl.to(body, { height: 0, opacity: 0, paddingTop: 0, paddingBottom: 0, duration: 0.32, ease: 'power2.inOut' });
+    }
+    if (!panel.__sq) {
+      panel.__sq = true;
+      tl.add(function () { panel.classList.add('sq'); });
+      tl.to(panel, { width: function () { return panel.offsetHeight; }, duration: 0.3, ease: 'power3.inOut' });
     }
   }
+
+  function unsquashPanel(panel) {
+    if (panel.__anim) panel.__anim.kill();
+    var tl = gsap.timeline();
+    panel.__anim = tl;
+    if (panel.__sq) {
+      panel.__sq = false;
+      tl.to(panel, { width: panel.__w, duration: 0.3, ease: 'power3.inOut' });
+      tl.add(function () { panel.classList.remove('sq'); });
+    }
+    if (panel.__closed) {
+      panel.__closed = false;
+      panel.querySelector('.fold').textContent = '—';
+      tl.add(function () { openBody(panel); });
+    }
+  }
+
   document.querySelectorAll('.panel').forEach(function (panel) {
-    panel.querySelector('.fold').addEventListener('click', function () { setCollapsed(panel, !panel.__closed); });
+    panel.querySelector('.fold').addEventListener('click', function () {
+      if (panel.__sq) unsquashPanel(panel);
+      else setCollapsed(panel, !panel.__closed);
+    });
+    // a squared chip expands from a click anywhere on it
+    panel.addEventListener('click', function (e) {
+      if (panel.__sq && !e.target.closest('.fold')) unsquashPanel(panel);
+    });
   });
 
   function setFocus(on) {
     state.focus = on;
     document.body.classList.toggle('focus', on);
     $('#focusBtn').classList.toggle('on', on);
-    ['#p-audio', '#p-params', '#p-tele'].forEach(function (sel) { setCollapsed($(sel), on); });
+    document.querySelectorAll('.panel').forEach(function (panel) {
+      on ? squashPanel(panel) : unsquashPanel(panel);
+    });
     gsap.to(camera.position, { z: on ? 5.3 : 6.4, duration: 1.1, ease: 'power2.inOut', overwrite: 'auto' });
     setStatus(on ? 'FOCUS MODE — FULL FIELD' : 'CONSOLE RESTORED',
-      on ? 'ANOMALY + MORPHOLOGY ONLY' : 'ALL PANELS ACTIVE');
+      on ? 'PANELS DOCKED TO CHIPS' : 'ALL PANELS ACTIVE');
   }
   $('#focusBtn').addEventListener('click', function () { setFocus(!state.focus); });
 

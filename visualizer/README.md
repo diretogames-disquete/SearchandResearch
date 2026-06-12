@@ -105,9 +105,11 @@ or hit `C` to step through; CYCLE auto-rotates every 8s. Shader colours tween
 via GSAP and the whole HUD (accents, sliders, VU, spectrum, scope) follows
 through CSS variables.
 
-**FOCUS mode.** Every panel header has a fold button (`—`/`+`), and the
-◈ FOCUS button (or `F`) collapses SIGNAL/PARAMETERS/TELEMETRY, dims the corner
-HUD and dollies the camera in so the anomaly and MORPHOLOGY take the screen.
+**FOCUS mode.** Every panel header has a fold button (`—`/`+`) for a
+vertical fold. The ◈ FOCUS button (or `F`) squashes ALL four panels in sync —
+first vertically, then horizontally — into small square chips (status dot +
+`+`), dims the corner HUD and dollies the camera in so the anomaly fills the
+screen. Click any chip to restore that panel; FOCUS again restores all.
 
 **More signal/telemetry bells & whistles.** SIGNAL gains an ECHO send
 (feedback-delay wet control) and a 16-segment VU LED strip; TELEMETRY gains

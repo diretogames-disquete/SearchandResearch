@@ -253,6 +253,13 @@
   }
   .fold:hover { color: var(--accent); }
   .panel .body { overflow: hidden; }
+  .head { white-space: nowrap; }
+  .head .ttl, .head .dots { font-weight: normal; }
+  /* squared chip state (focus mode): only the dot and + remain */
+  .panel.sq .head .ttl, .panel.sq .head .dots { display: none; }
+  .panel.sq .head { justify-content: center; gap: 2px; padding: 9px 0; }
+  .panel.sq .head .dot { margin-right: 3px; }
+  .panel.sq { cursor: pointer; }
   .corner { transition: opacity 0.5s; }
   body.focus .corner { opacity: 0.22; }
   #focusBtn {
@@ -340,7 +347,7 @@
   <!-- SIGNAL panel -->
   <div class="panel" id="p-audio" style="left: 24px; top: 112px;">
     <i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i>
-    <div class="head"><span><span class="dot idle"></span>SIGNAL</span><span class="grip">::: <button class="fold" aria-label="collapse panel">—</button></span></div>
+    <div class="head"><span><span class="dot idle"></span><b class="ttl">SIGNAL</b></span><span class="grip"><b class="dots">:::</b> <button class="fold" aria-label="collapse panel">—</button></span></div>
     <div class="body">
       <div class="transport">
         <div id="play" role="button" aria-label="play/pause" tabindex="0"><span class="ico"></span></div>
@@ -383,7 +390,7 @@
   <!-- PARAMETERS panel -->
   <div class="panel" id="p-params" style="right: 24px; top: 112px;">
     <i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i>
-    <div class="head"><span><span class="dot idle"></span>PARAMETERS</span><span class="grip">::: <button class="fold" aria-label="collapse panel">—</button></span></div>
+    <div class="head"><span><span class="dot idle"></span><b class="ttl">PARAMETERS</b></span><span class="grip"><b class="dots">:::</b> <button class="fold" aria-label="collapse panel">—</button></span></div>
     <div class="body">
       <div class="slider"><span class="lab">ROTATION</span><input type="range" id="rotation"   min="0" max="5"   step="0.01" value="0.45"><span class="val" id="rotationVal">0.45</span></div>
       <div class="slider"><span class="lab">RESOLUTION</span><input type="range" id="resolution" min="0" max="1"  step="0.01" value="0.55"><span class="val" id="resolutionVal">—</span></div>
@@ -403,7 +410,7 @@
   <!-- MORPHOLOGY panel (extension: different shapes) -->
   <div class="panel" id="p-morph" style="right: 24px; bottom: 96px;">
     <i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i>
-    <div class="head"><span><span class="dot idle"></span>MORPHOLOGY</span><span class="grip">::: <button class="fold" aria-label="collapse panel">—</button></span></div>
+    <div class="head"><span><span class="dot idle"></span><b class="ttl">MORPHOLOGY</b></span><span class="grip"><b class="dots">:::</b> <button class="fold" aria-label="collapse panel">—</button></span></div>
     <div class="body">
       <div class="shapes" id="shapeGrid"></div>
       <div class="row" style="margin-top: 11px;">
@@ -415,7 +422,7 @@
   <!-- TELEMETRY panel -->
   <div class="panel" id="p-tele" style="left: 24px; bottom: 96px; width: 268px;">
     <i class="nw"></i><i class="ne"></i><i class="sw"></i><i class="se"></i>
-    <div class="head"><span><span class="dot idle"></span>TELEMETRY</span><span class="grip">::: <button class="fold" aria-label="collapse panel">—</button></span></div>
+    <div class="head"><span><span class="dot idle"></span><b class="ttl">TELEMETRY</b></span><span class="grip"><b class="dots">:::</b> <button class="fold" aria-label="collapse panel">—</button></span></div>
     <div class="body">
       <div class="scopes">
         <canvas id="spectrum"></canvas>
